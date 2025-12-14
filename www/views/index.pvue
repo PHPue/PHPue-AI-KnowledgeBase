@@ -1,0 +1,59 @@
+<!-- Author: Edward Patch -->
+<script>
+    $lang = [
+        'welcome' => 'Welcome to PHPue - Unique Experience',
+        'subtitle' => 'A modern PHP framework with Vue-like syntax',
+        'docs' => 'Documentation',
+        'github' => 'GitHub'
+    ];
+
+    $features = ["Fast", "Simple", "Powerful"];
+</script>
+
+<header>
+    <title>PHPue - Welcome</title>
+    <meta name="description" content="PHPue - Modern PHP framework with Vue-like syntax">
+</header>
+
+<template>
+    <div class="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 flex items-center justify-center">
+        <div class="max-w-2xl mx-auto text-center px-6">
+            <!-- Logo -->
+            <div class="mb-8">
+                <img src="/assets/img/logo-large.png" alt="PHPue Logo" class="h-24 w-auto mx-auto">
+            </div>
+
+            <!-- Main Content -->
+            <h1 class="text-4xl md:text-5xl font-bold text-gray-800 mb-4">
+                {{$lang['welcome']}}
+            </h1>
+            
+            <p class="text-lg text-gray-600 mb-8">
+                {{$lang['subtitle']}}
+            </p>
+
+            <!-- Features List -->
+            <div class="flex justify-center gap-4 mb-8">
+                <div p-for="$feature in $features" 
+                     class="px-4 py-2 bg-white rounded-lg shadow-sm border border-gray-200 text-gray-700">
+                    {{$feature}}
+                </div>
+            </div>
+
+            <!-- Action Buttons -->
+            <div class="flex gap-4 justify-center">      
+                <a href="https://phpue.co.uk/docs" class="px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors" target="blank">
+                    {{$lang['docs']}}
+                </a>
+                
+                <a href="https://github.com/PHPue/PHPue/" class="px-6 py-3 bg-gray-800 text-white rounded-lg hover:bg-gray-900 transition-colors" target="blank">
+                    {{$lang['github']}}
+                </a>
+            </div>
+        </div>
+    </div>
+</template>
+
+<cscript>
+    console.log("PHPue welcome page loaded!");
+</cscript>
