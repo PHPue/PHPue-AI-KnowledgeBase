@@ -1,0 +1,23 @@
+
+
+<template>
+  <form method="post">
+    <input type="text" name="name" placeholder="Your name">
+    <button type="submit" name="submit">Send</button>
+  </form>
+
+  <p p-if="$successMessage">
+    {{ $successMessage }}
+  </p>
+</template>
+
+<script>
+    $name = "";
+    $successMessage = "";
+
+    if (isset($_POST['submit'])) {
+        $name = $_POST['name'];
+        $successMessage = "Thanks, " . $name . "!";
+        $name = "";
+    }
+</script>
