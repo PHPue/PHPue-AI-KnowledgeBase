@@ -1,3 +1,4 @@
 /www/.dist
 *.zip
 www/backend/env.php
+/www/node_modules
