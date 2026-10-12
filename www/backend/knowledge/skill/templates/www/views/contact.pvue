@@ -1,0 +1,72 @@
+<!-- PHPue Vanilla view: explicit (privacy-first) form submission via @AJAX -->
+<script>
+    $contactName = $_SESSION['contact_name'] ?? '';
+    $bSent       = $_SESSION['contact_sent'] ?? false;
+    $topics      = ['General', 'Support', 'Sales'];
+
+    @AJAX('POST')
+    function submitContact($input) {
+        $form    = $input['formData'] ?? [];
+        $name    = trim((string)($form['name'] ?? ''));
+        $email   = trim((string)($form['email'] ?? ''));
+        $message = trim((string)($form['message'] ?? ''));
+
+        header('Content-Type: application/json');
+        if ($name === '' || !filter_var($email, FILTER_VALIDATE_EMAIL) || $message === '') {
+            http_response_code(422);
+            echo json_encode(['ok' => false, 'error' => 'Please fill in every field with a valid email.']);
+            return;
+        }
+        $_SESSION['contact_name'] = $name;
+        $_SESSION['contact_sent'] = true;
+        echo json_encode(['ok' => true]);
+    }
+</script>
+
+<header>
+    <title>Contact | My PHPue App</title>
+</header>
+
+<template>
+    <main class="max-w-xl mx-auto px-4 py-12">
+        <h1 class="text-3xl font-bold mb-6">Contact</h1>
+
+        <section p-if="$bSent" class="mb-6 rounded-lg bg-emerald-50 p-4 text-emerald-800" role="status">
+            Thanks {{ $contactName }}, we received your message.
+        </section>
+
+        <form onsubmit="submitContact(event)" class="space-y-4">
+            <label class="block">Name
+                <input name="name" value="{{ $contactName }}" required class="mt-1 w-full rounded border px-3 py-2">
+            </label>
+            <label class="block">Email
+                <input name="email" type="email" required class="mt-1 w-full rounded border px-3 py-2">
+            </label>
+            <label class="block">Topic
+                <select name="topic" class="mt-1 w-full rounded border px-3 py-2">
+                    <option p-for="$topic in $topics" value="{{ $topic }}">{{ $topic }}</option>
+                </select>
+            </label>
+            <label class="block">Message
+                <textarea name="message" required class="mt-1 w-full rounded border px-3 py-2"></textarea>
+            </label>
+            <p id="contact-error" class="text-rose-600" aria-live="assertive"></p>
+            <button type="submit" class="rounded-lg bg-blue-600 px-5 py-2 font-semibold text-white">Send</button>
+        </form>
+    </main>
+</template>
+
+<cscript>
+    async function submitContact(event) {
+        event.preventDefault();
+        const formData = new FormData(event.target);
+        const res = await fetch('', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ action: 'submitContact', formData: Object.fromEntries(formData) })
+        });
+        const data = await res.json().catch(() => ({ ok: false, error: 'Unexpected response' }));
+        if (data.ok) window.location.reload();
+        else document.getElementById('contact-error').innerText = data.error;
+    }
+</cscript>

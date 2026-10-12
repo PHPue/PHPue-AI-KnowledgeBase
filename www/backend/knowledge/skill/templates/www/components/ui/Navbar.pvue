@@ -1,0 +1,20 @@
+<script>
+    $navRoutes = phpue_navigation();               // [['name','title','url'], ...] (title = view <title>)
+    $navOrder  = ['/', '/catalogue', '/contact'];
+    $navPos    = array_flip($navOrder);
+    usort($navRoutes, fn($a, $b) => ($navPos[$a['url']] ?? PHP_INT_MAX) <=> ($navPos[$b['url']] ?? PHP_INT_MAX));
+    foreach ($navRoutes as &$navRoute) {
+        $navRoute['title'] = trim(preg_split('/\s*[-|]\s*/', $navRoute['title'])[0]);   // "Home | Site" → "Home"
+    }
+    unset($navRoute);
+    $navCurrent = parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH);
+</script>
+
+<template>
+    <nav class="sticky top-0 z-50 bg-white shadow border-b border-slate-200" aria-label="Main">
+        <div class="max-w-7xl mx-auto px-4 flex items-center gap-4 h-16">
+            <a href="/" class="font-bold text-xl"><?= htmlspecialchars(APP_NAME) ?></a>
+            <a p-for="$navRoute in $navRoutes" href="{{ $navRoute['url'] }}" class="px-3 py-2 rounded-md text-sm {{ $navCurrent === $navRoute['url'] ? 'text-emerald-600 font-semibold' : 'text-slate-600' }}">{{ $navRoute['title'] }}</a>
+        </div>
+    </nav>
+</template>

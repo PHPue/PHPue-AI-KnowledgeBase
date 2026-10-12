@@ -1,0 +1,76 @@
+<script>
+    // /docs?topic=<slug> renders one knowledge topic; /docs lists them all.
+    // /docs?topic=overview and /docs?topic=faq are 301-redirected by backend/knowledge.
+    $topic = (string) ($_GET['topic'] ?? '');
+    $bTopic = PHPueKnowledge::exists($topic);
+    $sections = PHPueKnowledge::sections();
+
+    if ($topic !== '' && !$bTopic) {
+        http_response_code(404);
+    }
+
+    $topicHtml = $bTopic ? PHPueKnowledge::html($topic) : '';
+    $topicTitle = $bTopic ? PHPueKnowledge::title($topic) : '';
+    $topicMarkdownUrl = $bTopic ? PHPueKnowledge::markdownUrl($topic) : '';
+    $toc = $bTopic ? PHPueMarkdown::toc(PHPueKnowledge::markdown($topic)) : [];
+    [$prevTopic, $nextTopic] = $bTopic ? PHPueKnowledge::neighbours($topic) : [null, null];
+    $updated = PHPueKnowledge::UPDATED;
+</script>
+
+<template>
+    <div class="kb-wrap">
+        <div class="kb-docs {{ count($toc) > 2 ? 'has-toc' : '' }}">
+            <aside class="kb-sidebar" aria-label="Topics">
+                <?php foreach ($sections as $sectionName => $sectionTopics): ?>
+                    <h2>{{ $sectionName }}</h2>
+                    <ul>
+                        <li p-for="$slug => $title in $sectionTopics"><a href="{{ PHPueKnowledge::pageUrl($slug) }}" aria-current="{{ $slug === $topic ? 'page' : 'false' }}">{{ $title }}</a></li>
+                    </ul>
+                <?php endforeach; ?>
+            </aside>
+
+            <article class="kb-prose" p-if="$bTopic">
+                <div class="kb-meta-bar">
+                    <nav class="kb-breadcrumb" aria-label="Breadcrumb">
+                        <ol>
+                            <li><a href="/">Home</a></li>
+                            <li><a href="/docs">Topics</a></li>
+                            <li aria-current="page">{{ $topicTitle }}</li>
+                        </ol>
+                    </nav>
+                    <span>PHPue 0.0.3 · updated <time datetime="{{ $updated }}">{{ $updated }}</time></span>
+                    <a href="{{ $topicMarkdownUrl }}" type="text/markdown">View as markdown</a>
+                </div>
+
+                <?= $topicHtml ?>
+
+                <nav class="kb-pager" aria-label="Next and previous topics">
+                    <a p-if="$prevTopic !== null" class="prev" href="{{ PHPueKnowledge::pageUrl((string) $prevTopic) }}"><small>Previous</small>{{ PHPueKnowledge::title((string) $prevTopic) }}</a>
+                    <a p-if="$nextTopic !== null" class="next" href="{{ PHPueKnowledge::pageUrl((string) $nextTopic) }}"><small>Next</small>{{ PHPueKnowledge::title((string) $nextTopic) }}</a>
+                </nav>
+            </article>
+
+            <section class="kb-prose" p-if="!$bTopic">
+                <h1>All PHPue topics</h1>
+                <p p-if="$topic !== ''">There is no topic called <code>{{ $topic }}</code>. Here is everything that is available.</p>
+                <p>
+                    Each topic is self-contained and also available as markdown at <code>/knowledge/&lt;topic&gt;.md</code>.
+                    For AI tools, <a href="/llms-full.txt">/llms-full.txt</a> contains all of them in one file.
+                </p>
+                <?php foreach ($sections as $sectionName => $sectionTopics): ?>
+                    <h2>{{ $sectionName }}</h2>
+                    <ul>
+                        <li p-for="$slug => $title in $sectionTopics"><a href="{{ PHPueKnowledge::pageUrl($slug) }}">{{ $title }}</a>: {{ PHPueKnowledge::description($slug) }}</li>
+                    </ul>
+                <?php endforeach; ?>
+            </section>
+
+            <nav class="kb-toc" aria-label="On this page" p-if="count($toc) > 2">
+                <h2>On this page</h2>
+                <ul>
+                    <li p-for="$anchor => $heading in $toc"><a href="#{{ $anchor }}">{{ $heading }}</a></li>
+                </ul>
+            </nav>
+        </div>
+    </div>
+</template>

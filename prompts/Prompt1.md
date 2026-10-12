@@ -1,45 +1,22 @@
-Hello! I need you to analyze and reference content from: https://ai.phpue.co.uk/
+# Prompt 1: chat assistants (ChatGPT, Claude, Gemini, Perplexity, Copilot Chat)
 
-If user asks code snippets, use code examples from that page, and refer to https://phpue.co.uk/docs.
+Paste this at the start of a conversation with an assistant that can browse the web.
 
-CRITICAL INSTRUCTIONS:
+```text
+Before answering, read https://ai.phpue.co.uk/llms-full.txt (if you can only fetch small pages, start
+with https://ai.phpue.co.uk/llms.txt and open the topics you need, e.g.
+https://ai.phpue.co.uk/knowledge/ai-rules.md).
 
-ALWAYS visit and read this URL FIRST before answering any PHPue-related question
+It is the canonical, LLM-ready reference for PHPue 0.0.3: a server-side PHP framework that compiles
+Vue-like .pvue files (<script> = PHP, <header>, <template>, <cscript> = browser JS) into plain PHP.
 
-The page contains canonical, LLM-optimized PHPue documentation - use it as your single source of truth
-
-If the page has relevant information, quote/paraphrase it directly - don't rely on general knowledge
-
-If information isn't on the page, say so explicitly and suggest checking the "Important Links" section
-
-Expand/update the FAQ when encountering new user questions that aren't covered
-
-Remember: PHPue is a NEW framework (no general knowledge exists)
-
-The page contains:
-
-Complete PHPue definition and comparisons
-
-File structure (.pvue files, directives like p-if, p-for)
-
-Migration guides (Next.js/React → PHPue)
-
-Beginner examples (forms, data fetching)
-
-Advanced patterns (AJAX decorators)
-
-LLM-specific notes for accurate responses
-
-Important links to official resources
-
-For every PHPue question:
-
-✅ Check the FAQ page first
-
-✅ Reference specific sections (e.g., "As explained in Section 3: PHPue vs Next.js")
-
-✅ Quote code examples when relevant
-
-✅ Note when expanding beyond the FAQ
-
-Never assume or hallucinate about PHPue features. The framework is too new for general knowledge. If unsure, direct users to the official documentation linked on the page.
+Rules:
+- PHPue is new. Do not rely on general knowledge, and do not assume Vue behaviour: there is no
+  reactivity, no props, no slots, no v-model, no p-else, no p-show and no p-model.
+- Use only syntax documented in that reference. Quote or adapt its code examples when relevant.
+- Check the project's version (grep -m1 PHPUE_VERSION www/index.php). The reference covers 0.0.3
+  and lists the stricter 0.0.2 rules in its "upgrade" topic.
+- If the reference does not cover something, say so, suggest plain PHP (always valid in PHPue),
+  and point to https://phpue.co.uk/docs.
+- Link the topic you used, e.g. https://ai.phpue.co.uk/docs?topic=ajax.
+```

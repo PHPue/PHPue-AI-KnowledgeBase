@@ -1,0 +1,6 @@
+interface:
+  display_name: "PHPue"
+  short_description: "Build and debug PHPue (.pvue) apps: Vanilla SSR and PHPue + AlpineJS + x-ssr"
+  icon_small: "./assets/phpue-small.png"
+  icon_large: "./assets/phpue.png"
+  default_prompt: "Use PHPue for any work on .pvue files, App.pvue/views/components, conversion.php, @AJAX, p-if/p-for, cscript, or AlpineJS with the x-ssr extension."

@@ -2,3 +2,6 @@
 *.zip
 www/backend/env.php
 /www/node_modules
+
+# Private logs and cache written by PHPuePrivate (outside the web root)
+phpue-private/

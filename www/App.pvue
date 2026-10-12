@@ -1,20 +1,64 @@
 <!-- Author: Edward Patch -->
 <script>
     @require Navbar 'components/Navbar.pvue';
+    @require SiteFooter 'components/SiteFooter.pvue';
+
     #require 'views/index.pvue';
+    #require 'views/docs.pvue';
+    #require 'views/faq.pvue';
+    #require 'views/skills.pvue';
+    #require 'views/chat.pvue';
+    #require 'views/form.pvue';
+
+    // Title, description, canonical, Open Graph, markdown alternate and JSON-LD for this route.
+    // Built from backend/knowledge (sessionless), escaped there, printed raw by the header below.
+    $bNotFound = ($_GET['page'] ?? '') === '404';
+    $phpueHead = $bNotFound ? '' : PHPueKnowledge::headTags(get_current_route(), $_GET);
+
+    // PHPUE_SESSION is 'lazy': anonymous visitors (and crawlers) get cacheable pages.
+    if (session_status() !== PHP_SESSION_ACTIVE && !$bNotFound) {
+        header('Cache-Control: public, max-age=300');
+        header('Vary: Accept');
+    }
 </script>
 
 <header>
+    <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="author" content="Edward Patch">
+    <meta name="theme-color" content="#0d8a63">
+    {{ $phpueHead }}
 
-    <meta name="robots" content="noindex">
-
-    <link rel="icon" href="assets/img/favicon_io/favicon.ico" type="image/x-icon"/>
-    <link rel="stylesheet" href="assets/css/styles.css">
-
-    <link rel="stylesheet" href="/assets/css/tailwind-styles.css">
+    <link rel="icon" href="/assets/img/favicon_io/favicon.ico" type="image/x-icon">
+    <link rel="apple-touch-icon" href="/assets/img/favicon_io/apple-touch-icon.png">
+    <link rel="manifest" href="/assets/img/favicon_io/site.webmanifest">
+    <link rel="stylesheet" href="/assets/css/styles.css?v=20261012d">
 </header>
 
 <template>
-    <View></View>
+    <div class="kb">
+        <a class="kb-skip" href="#main">Skip to content</a>
+        <Navbar/>
+        <main id="main">
+            <View/>
+        </main>
+        <SiteFooter/>
+    </div>
 </template>
+
+<cscript>
+    // Copy buttons for code blocks rendered from the knowledge markdown
+    document.querySelectorAll('.kb-prose .code-wrap').forEach(function (wrap) {
+        var button = document.createElement('button');
+        button.type = 'button';
+        button.className = 'kb-copy';
+        button.textContent = 'Copy';
+        button.addEventListener('click', function () {
+            navigator.clipboard.writeText(wrap.querySelector('code').innerText).then(function () {
+                button.textContent = 'Copied';
+                setTimeout(function () { button.textContent = 'Copy'; }, 1500);
+            });
+        });
+        wrap.appendChild(button);
+    });
+</cscript>

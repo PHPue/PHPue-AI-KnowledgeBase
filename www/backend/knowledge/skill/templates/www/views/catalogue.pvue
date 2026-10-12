@@ -1,0 +1,82 @@
+<!-- PHPue + AlpineJS + x-ssr view: SSR first paint, CSR filtering that keeps server nodes. -->
+<script>
+    @require ProductCard 'components/ui/ProductCard.pvue';
+
+    $catalogue      = CatalogueRepository::getInstance();
+    $categories     = $catalogue->categories();
+    $activeCategory = in_array($_GET['category'] ?? '', $categories, true) ? $_GET['category'] : '';
+
+    // PHP renders exactly what the JS getter below would show for the same URL.
+    $initialProducts = $catalogue->filter($activeCategory ?: null);
+    $allProducts = array_map(fn($p) => $p + ['priceLabel' => '£' . number_format($p['price'] / 100, 2)], $catalogue->all());
+</script>
+
+<header>
+    <title>Catalogue | My PHPue App</title>
+    <!-- Alpine + x-ssr can also be loaded per view here instead of in App.pvue -->
+</header>
+
+<template>
+    <main class="max-w-5xl mx-auto px-4 py-12" x-data="catalogue">
+        <h1 class="text-3xl font-bold mb-6">Catalogue</h1>
+
+        <div class="mb-6 flex flex-wrap gap-2">
+            <button type="button" @click="setCategory('')" class="rounded-full border px-4 py-1 text-sm"
+                    :class="activeCategory === '' ? 'bg-slate-900 text-white' : 'bg-white'">All</button>
+            <?php foreach ($categories as $cat): ?>
+                <button type="button" @click="setCategory('<?= htmlspecialchars($cat, ENT_QUOTES) ?>')" class="rounded-full border px-4 py-1 text-sm"
+                        :class="activeCategory === '<?= htmlspecialchars($cat, ENT_QUOTES) ?>' ? 'bg-slate-900 text-white' : 'bg-white'">
+                    <?= htmlspecialchars($cat) ?>
+                </button>
+            <?php endforeach; ?>
+        </div>
+
+        <p class="mb-4 text-sm text-slate-500">
+            Showing <span x-text="visibleProducts.length"><?= count($initialProducts) ?></span> products
+        </p>
+
+        <!-- x-ssr adopts the server cards (matched by data-id) and only creates/removes cards for changed keys. -->
+        <section x-ssr="visibleProducts" x-ssr-key="id" x-ssr-template="productTemplate" class="grid gap-4 sm:grid-cols-2">
+            <?php foreach ($initialProducts as $cardProduct): ?>
+                <ProductCard/>
+            <?php endforeach; ?>
+        </section>
+
+        <p x-show="visibleProducts.length === 0" x-cloak class="text-slate-500">No products in this category.</p>
+    </main>
+</template>
+
+<cscript>
+    document.addEventListener('alpine:init', () => {
+        Alpine.data('catalogue', () => ({
+            allProducts: {{ $allProducts }},
+            activeCategory: {{ $activeCategory }},
+
+            // CSR template: mirror ProductCard's markup. Escape placeholders inside backticks: \${item.prop}
+            productTemplate: {
+                html: `
+                    <article class="rounded-xl border border-slate-200 bg-white p-4 shadow-sm">
+                        <h3 class="font-semibold">\${item.name}</h3>
+                        <p class="text-sm text-slate-600">\${item.priceLabel}</p>
+                    </article>
+                `,
+                process(el, item, component) {
+                    // nested data, event wiring, conditional classes go here
+                }
+            },
+
+            get visibleProducts() {
+                return this.activeCategory
+                    ? this.allProducts.filter(p => p.category === this.activeCategory)
+                    : this.allProducts;
+            },
+
+            setCategory(cat) {
+                this.activeCategory = cat;
+                const url = new URL(window.location);
+                cat ? url.searchParams.set('category', cat) : url.searchParams.delete('category');
+                window.history.pushState({}, '', url);     // reload/share → same SSR state
+            }
+        }));
+    });
+</cscript>
