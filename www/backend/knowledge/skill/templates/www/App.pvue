@@ -1,0 +1,38 @@
+<!-- PHPue App.pvue: root layout. Everything here runs on every request. -->
+<script>
+    @require Navbar 'components/ui/Navbar.pvue';
+
+    #require 'views/index.pvue';
+    #require 'views/contact.pvue';
+    #require 'views/catalogue.pvue';
+
+    // App variables are NOT visible inside views; share via $_SESSION, define(), or backend singletons.
+    define('APP_NAME', 'My PHPue App');
+
+    // Dynamic head tags: build escaped strings here, inject them raw in the header block with {{ $var }}.
+    $themeColor = '<meta name="theme-color" content="#1c5d9c">';
+
+    @AJAX('POST')
+    function setCookieConsent($input) {
+        $bAllow = (bool)($input['allow'] ?? false);
+        setcookie('cookie_consent', $bAllow ? 'true' : 'false', time() + 31536000, '/');
+        header('Content-Type: application/json');
+        echo json_encode(['ok' => true]);
+    }
+</script>
+
+<header>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    {{ $themeColor }}
+    <link rel="icon" href="/assets/img/favicon_io/favicon.ico" type="image/x-icon">
+    <link rel="stylesheet" href="/assets/css/tailwind-styles.css">
+    <!-- PHPue + AlpineJS flavour only: Alpine deferred, x-ssr extension NOT deferred -->
+    <script defer src="/assets/js/fworks/alpine.min.js"></script>
+    <script src="/assets/js/phpue-ext-csr/alpine.ext.min.ssr.js"></script>
+</header>
+
+<template>
+    <Navbar/>
+    <View/>
+</template>

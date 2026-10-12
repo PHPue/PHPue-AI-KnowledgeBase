@@ -1,0 +1,26 @@
+<script>
+    $footerVersion = PHPueKnowledge::PHPUE_VERSION;
+    $footerUpdated = PHPueKnowledge::UPDATED;
+</script>
+
+<template>
+    <footer class="kb-footer">
+        <div class="kb-wrap">
+            <div>
+                <p><strong>PHPue AI Knowledge</strong>, the LLM-ready reference for PHPue {{ $footerVersion }}.</p>
+                <p>Updated {{ $footerUpdated }} · Built with PHPue · Apache 2.0</p>
+            </div>
+            <nav aria-label="Resources">
+                <ul>
+                    <li><a href="https://phpue.co.uk" rel="noopener">phpue.co.uk</a></li>
+                    <li><a href="https://phpue.co.uk/docs" rel="noopener">Official docs</a></li>
+                    <li><a href="https://github.com/PHPue/PHPue" rel="noopener">PHPue on GitHub</a></li>
+                    <li><a href="https://github.com/PHPue/PHPue-AI" rel="noopener">Source of this site</a></li>
+                    <li><a href="/llms.txt">llms.txt</a></li>
+                    <li><a href="/llms-full.txt">llms-full.txt</a></li>
+                    <li><a href="/sitemap.xml">Sitemap</a></li>
+                </ul>
+            </nav>
+        </div>
+    </footer>
+</template>

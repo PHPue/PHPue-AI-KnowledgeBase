@@ -4,6 +4,39 @@
  * Enhanced version that properly parses Gemini API responses
  */
 
+if (!function_exists('geminiWelcomeMessage')) {
+    /** First message of every chat (rendered without starting a session). */
+    function geminiWelcomeMessage(): array {
+        return [
+            'role' => 'assistant',
+            'user' => 'Gemini',
+            'text' => "👋 Hello! I'm Gemini, your PHPue AI assistant. My answers are grounded on the PHPue 0.0.3 knowledge base (ai.phpue.co.uk/llms-full.txt). Ask me about components, routing, @AJAX, deployment or anything else PHPue!",
+            'timestamp' => date('H:i:s'),
+            'type' => 'welcome'
+        ];
+    }
+}
+
+if (!function_exists('geminiSystemPreamble')) {
+    /** Instructions shared by the server chat and the browser-only "your own key" mode. */
+    function geminiSystemPreamble(): string {
+        return "You are PHPue AI, the assistant on ai.phpue.co.uk. Answer questions about PHPue, a server-side PHP framework "
+            . "that compiles Vue-like .pvue files to PHP. PHPue is NOT Vue: never suggest v-if, v-model, p-else, p-show, p-model, "
+            . "props, slots or client-side reactivity, and never write {{ " . '$obj.prop' . " }}. Base every answer on the knowledge base below; "
+            . "it is the source of truth for PHPue 0.0.3. If it does not cover something, say so and suggest plain PHP or "
+            . "https://phpue.co.uk/docs. Keep answers concise, use fenced code blocks for code, and link the relevant topic URL "
+            . "(https://ai.phpue.co.uk/docs?topic=<slug>) when it helps.";
+    }
+}
+
+if (!function_exists('geminiSystemInstruction')) {
+    /** Grounds every answer on the knowledge base in backend/knowledge/content. */
+    function geminiSystemInstruction(): string {
+        $knowledge = class_exists('PHPueKnowledge') ? PHPueKnowledge::llmsFullTxt() : '';
+        return geminiSystemPreamble() . "\n\n=== PHPUE KNOWLEDGE BASE ===\n" . $knowledge;
+    }
+}
+
 if (!function_exists('callGeminiAPI')) {
     function callGeminiAPI($prompt) {
         $apiUrl = getenv('GEMINI_API_URL') ?: 'https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent';
@@ -11,7 +44,7 @@ if (!function_exists('callGeminiAPI')) {
         
         // Fallback if no API key is configured
         if (!$apiKey) {
-            return "👋 **Welcome to PHPue AI Assistant!**\n\nTo enable Gemini AI responses:\n\n1. Copy `backend/env.example.php` to `backend/env.php`\n2. Add your Gemini API key from [Google AI Studio](https://makersuite.google.com/app/apikey)\n3. Restart the chat\n\nIn the meantime, here's a PHPue tip: Use `@require` to include components from the `components/` folder in your views!";
+            return "👋 **Welcome to PHPue AI Assistant!**\n\nTo enable Gemini AI responses:\n\n1. Create `backend/env.php` (git-ignored, auto-loaded by PHPue)\n2. Add `putenv('GEMINI_API_KEY=...');` with a key from Google AI Studio\n3. Restart the chat\n\nIn the meantime, here's a PHPue tip: Use `@require` to include components from the `components/` folder in your views!";
         }
 
         $headers = [
@@ -19,32 +52,13 @@ if (!function_exists('callGeminiAPI')) {
             'x-goog-api-key: ' . $apiKey
         ];
         
-        // If the calling code included a short 'context' override via env or supports includeDocs,
-        // allow trimming and safe injection to the prompt. We detect a special marker: "__PHPUE_INCLUDE_DOCS__"
-        // which should be appended in the prompt when includeDocs is requested.
-        $injectedContext = '';
-        if (strpos($prompt, '__PHPUE_INCLUDE_DOCS__') !== false) {
-            // Remove marker and replace with a concise context block
-            $prompt = str_replace('__PHPUE_INCLUDE_DOCS__', '', $prompt);
-
-            $docsContext = "Reference material (short):\n- PHPue docs: https://phpue.co.uk/docs\n- PHPue AI: https://ai.phpue.co.uk\n\nWhen answering, prefer official documentation and include brief citations (URL or short path). If you quote docs, show the short path and link.";
-
-            // Ensure the injected context doesn't exceed a safe size (e.g., 1500 chars)
-            if (strlen($docsContext) > 1500) {
-                $docsContext = substr($docsContext, 0, 1500) . '...';
-            }
-
-            $injectedContext = "----BEGIN PHPUE CONTEXT----\n" . $docsContext . "\n----END PHPUE CONTEXT----\n\n";
-
-            // Prepend the context to the user's prompt
-            $prompt = $injectedContext . $prompt;
-
-            // Log the injected prompt for debugging (do not log API key)
-            @file_put_contents(sys_get_temp_dir() . '/phpue_gemini_debug.log', "[" . date('Y-m-d H:i:s') . "] Injected PHPUE context into prompt.\nPromptSnippet: " . substr($prompt, 0, 800) . "\n\n", FILE_APPEND | LOCK_EX);
-        }
-
-        // Gemini 1.5+ format
+        // Gemini 1.5+ format; system_instruction grounds the answer on the PHPue knowledge base
         $body = json_encode([
+            'system_instruction' => [
+                'parts' => [
+                    ['text' => geminiSystemInstruction()]
+                ]
+            ],
             'contents' => [
                 [
                     'parts' => [
@@ -54,7 +68,7 @@ if (!function_exists('callGeminiAPI')) {
             ],
             'generationConfig' => [
                 'temperature' => 0.7,
-                'maxOutputTokens' => 800,
+                'maxOutputTokens' => 2048,
                 'topP' => 0.8,
                 'topK' => 40
             ],
@@ -77,12 +91,13 @@ if (!function_exists('callGeminiAPI')) {
                 ]
             ]
         ]);        
-        $ch = curl_init($apiUrl . '?key=' . $apiKey); // Alternative format
+        // The key travels only in the x-goog-api-key header, never in the URL (URLs end up in logs and errors)
+        $ch = curl_init($apiUrl);
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
         curl_setopt($ch, CURLOPT_POST, true);
         curl_setopt($ch, CURLOPT_HTTPHEADER, $headers);
         curl_setopt($ch, CURLOPT_POSTFIELDS, $body);
-        curl_setopt($ch, CURLOPT_TIMEOUT, 15);
+        curl_setopt($ch, CURLOPT_TIMEOUT, 45);
         curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, true);
         
         $resp = curl_exec($ch);
@@ -90,21 +105,20 @@ if (!function_exists('callGeminiAPI')) {
         $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
         curl_close($ch);
         
-        // Log the raw response for debugging
-        @file_put_contents(sys_get_temp_dir() . '/phpue_gemini_debug.log', 
-            "[" . date('Y-m-d H:i:s') . "]\n" .
-            "Prompt: $prompt\n" .
-            "HTTP Code: $httpCode\n" .
-            "Response: $resp\n" .
-            "Error: $err\n\n", 
-            FILE_APPEND | LOCK_EX
-        );
-        
-        if ($err) {
-            return "⚠️ **Network Error**\n\nUnable to connect to Gemini API: " . $err;
+        // Log metadata only (private folder, never /tmp). Prompts and answers are personal data:
+        // they are only included, shortened, when PHPUE_DEBUG=1 on a development machine.
+        if (PHPuePrivate::debug()) {
+            PHPuePrivate::log('gemini', 'debug', ['status' => $httpCode, 'prompt' => mb_substr($prompt, 0, 300), 'response' => mb_substr((string) $resp, 0, 300)]);
         }
-        
+
+        if ($err) {
+            PHPuePrivate::log('gemini', 'network error', ['curl' => $err]);
+            return "⚠️ **Network Error**\n\nThe AI service could not be reached. Please try again in a moment.";
+        }
+
         if ($httpCode !== 200) {
+            $apiError = json_decode((string) $resp, true)['error']['message'] ?? '';
+            PHPuePrivate::log('gemini', 'api error', ['status' => $httpCode, 'error' => mb_substr($apiError, 0, 300)]);
             return "⚠️ **API Error (HTTP $httpCode)**\n\nPlease check your API key and endpoint configuration.";
         }
         
@@ -141,12 +155,11 @@ if (!function_exists('callGeminiAPI')) {
         } elseif (isset($decoded['text'])) {
             $text = $decoded['text'];
         } else {
-            // Log the structure for debugging
-            $structure = json_encode($decoded, JSON_PRETTY_PRINT);
-            @file_put_contents(sys_get_temp_dir() . '/phpue_gemini_structure.log', 
-                "[" . date('Y-m-d H:i:s') . "] Unrecognized structure:\n$structure\n\n", 
-                FILE_APPEND | LOCK_EX
-            );
+            // Log the shape of the response (keys and finish reason), not its content
+            PHPuePrivate::log('gemini', 'unrecognized response', [
+                'keys' => array_keys($decoded),
+                'finishReason' => $decoded['candidates'][0]['finishReason'] ?? null,
+            ]);
             
             return "⚠️ **Response Format Error**\n\nGemini API returned an unexpected response format. Please check server logs for details.";
         }

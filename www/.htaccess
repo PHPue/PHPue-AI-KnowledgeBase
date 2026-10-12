@@ -1,8 +1,34 @@
 RewriteEngine On
 
-# Ensure the request is not for an actual file or directory
+# --- SECURITY BLOCKS ---
+<FilesMatch "\.pvue$">
+    Require all denied
+</FilesMatch>
+
+<FilesMatch "^App\.php$">
+    Require all denied
+</FilesMatch>
+
+# Logs, data and environment files must never be downloadable (shared hosts write "error_log" next to scripts)
+<FilesMatch "(^error_log$|^env\.php$|\.(log|csv|sqlite|sqlite3|db|bak|sql)$)">
+    Require all denied
+</FilesMatch>
+
+# Source + compiled internals (.dist, extracted deploy dirs, backend, 404 partials)
+RewriteRule ^(\.dist|ajax|pages|backend|httpReqs|components|views)(/.*)?$ - [F,L]
+
+# /section/assets/x → /assets/x (relative asset URLs on query-string pages)
+RewriteCond %{REQUEST_URI} ^/([^/]+)/assets/(.*)$
+RewriteRule ^ /assets/%2 [L,R=301]
+
+# --- LEGACY REDIRECTS (before the front controller) ---
+# RewriteRule ^old-page/?$ /new-page [R=301,L]
+
+# --- FRONT CONTROLLER ---
 RewriteCond %{REQUEST_FILENAME} !-f
 RewriteCond %{REQUEST_FILENAME} !-d
-
-# Redirect all requests to index.php with the requested URL as a 'page' parameter
 RewriteRule ^(.*)$ index.php?page=$1 [QSA,L]
+
+# --- OPTIONAL: FORCE HTTPS ---
+# RewriteCond %{HTTPS} off
+# RewriteRule ^(.*)$ https://%{HTTP_HOST}%{REQUEST_URI} [L,R=301]

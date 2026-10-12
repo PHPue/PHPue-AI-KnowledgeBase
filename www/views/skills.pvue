@@ -1,0 +1,30 @@
+<script>
+    // /skills: download page for the PHPue Agent Skill (bundle built by backend/knowledge/PHPueSkill.php).
+    // The install guide is the agent-skill knowledge topic, so it also ships inside the skill and llms.txt.
+    $skillHtml = PHPueKnowledge::html('agent-skill', false);
+    $skillFiles = array_keys(PHPueSkill::files());
+    $updated = PHPueKnowledge::UPDATED;
+</script>
+
+<template>
+    <div class="kb-wrap">
+        <section class="kb-hero" aria-labelledby="skill-title">
+            <span class="kb-eyebrow">Agent Skill · Claude Code · Codex · Claude apps</span>
+            <h1 id="skill-title">PHPue Agent Skill</h1>
+            <p class="kb-lead">
+                The skill the PHPue author uses with Claude Code and Codex, in one download: the hard rules, in-depth references,
+                a starter app, and scripts that compile and lint <code>.pvue</code> files with your project's own compiler.
+            </p>
+            <div class="kb-actions">
+                <a class="kb-btn kb-btn-primary" href="/skills/phpue.zip" download>Download phpue.zip</a>
+                <a class="kb-btn" href="/skills/phpue/SKILL.md">View SKILL.md</a>
+                <a class="kb-btn" href="/knowledge/agent-skill.md">This page as markdown</a>
+            </div>
+            <p class="kb-meta-bar" style="margin-top: 1rem;">{{ count($skillFiles) }} files · PHPue 0.0.3 · updated {{ $updated }}</p>
+        </section>
+
+        <article class="kb-prose" style="max-width: 860px; padding-bottom: 1rem;">
+            <?= $skillHtml ?>
+        </article>
+    </div>
+</template>

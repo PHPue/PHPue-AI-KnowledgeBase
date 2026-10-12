@@ -1,0 +1,78 @@
+<!-- PHPue Vanilla view: route "/" -->
+<script>
+    $clickCount = $_SESSION['clickCount'] ?? 0;
+    $features   = ['Server-side rendering', 'Vue-like syntax', 'No build step'];
+    $bReturning = isset($_SESSION['clickCount']);
+
+    // AJAX handlers live in views/App (never components). They must ECHO; return values are discarded.
+    @AJAX('POST')
+    function incrementClicks($input) {
+        $_SESSION['clickCount'] = ($_SESSION['clickCount'] ?? 0) + 1;
+        header('Content-Type: application/json');
+        echo json_encode(['count' => $_SESSION['clickCount']]);
+    }
+
+    @AJAX('POST')
+    function resetClicks() {
+        $_SESSION['clickCount'] = 0;
+        header('Content-Type: application/json');
+        echo json_encode(['count' => 0]);
+    }
+</script>
+
+<header>
+    <!-- View headers are STATIC (no mustache vars, no PHP). The title tag also names the route in phpue_navigation(). -->
+    <title>Home | My PHPue App</title>
+    <meta name="description" content="A PHPue starter page.">
+</header>
+
+<template>
+    <main class="max-w-3xl mx-auto px-4 py-12 space-y-8">
+        <h1 class="text-4xl font-bold">Welcome to <?= htmlspecialchars(APP_NAME) ?></h1>
+
+        <section p-if="$bReturning" class="rounded-lg bg-emerald-50 p-4 text-emerald-800">
+            Welcome back! Your clicks are stored in the PHP session.
+        </section>
+
+        <ul class="list-disc pl-6">
+            <li p-for="$i => $feature in $features">{{ $i + 1 }}. {{ $feature }}</li>
+        </ul>
+
+        <div class="flex items-center gap-4">
+            <button type="button" onclick="incrementClicks()" class="rounded-lg bg-blue-600 px-5 py-3 font-semibold text-white">
+                Clicks: <span id="click-count" aria-live="polite">{{ $clickCount }}</span>
+            </button>
+            <button type="button" onclick="resetClicks()" class="rounded-lg border px-4 py-2">Reset</button>
+        </div>
+
+        <?php if ($clickCount >= 10): ?>
+            <p class="font-semibold text-amber-600">Ten or more clicks: impressive.</p>
+        <?php else: ?>
+            <p class="text-slate-500">Keep clicking; refresh to see the server remember.</p>
+        <?php endif; ?>
+    </main>
+</template>
+
+<cscript>
+    let clickCount = {{ $clickCount }};               // {{ $simpleVar }} → json_encode (no quotes needed)
+
+    async function callAction(action, payload = {}) {
+        const res = await fetch('', {                 // '' = current page URL, which owns these handlers
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ action, ...payload })
+        });
+        if (!res.ok) throw new Error('HTTP ' + res.status);
+        return res.json();
+    }
+
+    async function incrementClicks() {
+        const data = await callAction('incrementClicks');
+        document.getElementById('click-count').innerText = data.count;
+    }
+
+    async function resetClicks() {
+        await callAction('resetClicks');
+        window.location.reload();                     // let SSR re-render from $_SESSION
+    }
+</cscript>

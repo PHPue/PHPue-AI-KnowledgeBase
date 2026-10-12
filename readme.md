@@ -1,3 +1,27 @@
+# PHPue AI Knowledge ([ai.phpue.co.uk](https://ai.phpue.co.uk))
+
+The canonical, LLM-ready knowledge base for **PHPue 0.0.3**, built so people and AI agents can write PHPue apps correctly the first time. The site itself is a PHPue 0.0.3 app.
+
+| For | URL |
+|---|---|
+| People | [ai.phpue.co.uk](https://ai.phpue.co.uk), [/docs](https://ai.phpue.co.uk/docs), [/faq](https://ai.phpue.co.uk/faq), [/chat](https://ai.phpue.co.uk/chat) (Gemini, grounded on the knowledge base) |
+| LLMs and agents | [/llms.txt](https://ai.phpue.co.uk/llms.txt) (index), [/llms-full.txt](https://ai.phpue.co.uk/llms-full.txt) (everything), `/knowledge/<topic>.md` (one topic) |
+| Claude Code / Codex | [Agent Skill](https://ai.phpue.co.uk/skills): [/skills/phpue.zip](https://ai.phpue.co.uk/skills/phpue.zip), the author's own PHPue skill |
+| Coding agents | [AGENTS.md / CLAUDE.md for PHPue projects](https://ai.phpue.co.uk/docs?topic=ai-rules#agents-md-claude-md-for-phpue-projects), [prompts/](prompts/) |
+| Crawlers / GEO | `/robots.txt`, `/sitemap.xml`, JSON-LD (TechArticle, FAQPage, SoftwareSourceCode) on every page, markdown alternates and `Accept: text/markdown` negotiation |
+
+**Editing the knowledge:** everything comes from `www/backend/knowledge/content/*.md` (one file per topic, registered in `www/backend/knowledge/PHPueKnowledge.php`). The HTML pages, agent endpoints, sitemap, JSON-LD and the chat's grounding are all generated from those files, so there is nothing to rebuild. Bump `PHPueKnowledge::UPDATED` when content changes.
+
+**Updating the Agent Skill:** the downloadable skill is a copy of the author's skill. After changing it, run `php tools/sync-skill.php` (default source `~/.claude/skills/phpue`). It copies the skill into `www/backend/knowledge/skill/`, rewrites the few lines that point at the author's machine, and refuses to finish if any local path is left.
+
+**Run locally:** `cd www && php -S localhost:3000` (PHP 8.0+), or `docker compose up` (port 3000). The chat uses the site's Gemini key from `www/backend/env.php` (git-ignored, `<?php putenv('GEMINI_API_KEY=...');`). Visitors can also use their own Gemini or OpenAI key: that mode runs entirely in the browser (`www/assets/js/phpue-byok.js`), the key is never sent to this server, and `/chat` sends a Content-Security-Policy that only allows connections to this site, Google and OpenAI.
+
+---
+
+The original PHPue framework readme follows.
+
+---
+
 **Official Website:** [PHPue](https://phpue.co.uk) | **Official Documentation:** [PHPue Documentation](https://phpue.co.uk/docs)
 ---
 [PHPue Insights](https://phpue.co.uk/ue-insights) - [PHPue Releases](https://phpue.co.uk/ue-releases) - [PHPue Deployment](https://phpue.co.uk/deployment)
@@ -34,7 +58,7 @@ PHPue combines the simplicity of PHP with Vue-like templating syntax to create f
     <nav class="navbar">
         <ul>
             <li p-for="$item in $navItems">
-                <a href="{{ $item.url }}">{{ $item.title }}</a>
+                <a href="{{ $item['url'] }}">{{ $item['title'] }}</a>
             </li>
         </ul>
     </nav>
@@ -87,15 +111,15 @@ Component Importing
 
 ```html
 <template>
-    <div p-if="$user.isLoggedIn">
-        Welcome back, {{ $user.name }}!
+    <div p-if="$user['isLoggedIn']">
+        Welcome back, {{ $user['name'] }}!
     </div>
     
     <div p-if="count($products) > 0">
         <p>Showing {{ count($products) }} products</p>
     </div>
     
-    <div p-if="!$user.isLoggedIn">
+    <div p-if="!$user['isLoggedIn']">
         <a href="/login">Please log in</a>
     </div>
 </template>
@@ -107,14 +131,14 @@ Component Importing
 <template>
     <ul>
         <li p-for="$user in $users" class="user-item">
-            <strong>{{ $user.name }}</strong> - {{ $user.email }}
+            <strong>{{ $user['name'] }}</strong> - {{ $user['email'] }}
         </li>
     </ul>
     
     <div p-for="$product in $featuredProducts" class="product-card">
-        <h3>{{ $product.title }}</h3>
-        <p>{{ $product.description }}</p>
-        <span class="price">${{ $product.price }}</span>
+        <h3>{{ $product['title'] }}</h3>
+        <p>{{ $product['description'] }}</p>
+        <span class="price">${{ $product['price'] }}</span>
     </div>
 </template>
 ```
@@ -300,7 +324,7 @@ Seamless Variable Passing
 
 <template>
     <!-- PHP in HTML -->
-    <p>Welcome, {{ $userData.name }}!</p>
+    <p>Welcome, {{ $userData['name'] }}!</p>
     <p>Item count: {{ count($items) }}</p>
 </template>
 
