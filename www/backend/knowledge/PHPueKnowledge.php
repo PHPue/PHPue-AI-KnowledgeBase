@@ -11,7 +11,7 @@
         const PHPUE_VERSION  = '0.0.3';
         const UPDATED        = '2026-10-12';
         const AUTHOR         = 'Edward Patch';
-        const SUMMARY        = 'The canonical, LLM-ready reference for PHPue 0.0.3, the server-side PHP framework with Vue-like .pvue single-file components. Written so AI assistants and coding agents can build PHPue apps correctly first time.';
+        const SUMMARY        = 'The companion AI knowledge base for PHPue 0.0.3, with coding-agent rules, verified examples and downloadable skills. Official framework documentation: https://phpue.co.uk/docs.';
 
         /** slug => [section, title, description] in reading order. */
         const TOPICS = [
@@ -149,14 +149,15 @@
         }
 
         public static function sitemapXml(): string {
-            $urls = ['/' => '1.0', '/docs' => '0.8', '/faq' => '0.9'];
+            // Only canonical HTML pages. Agent exports and utility pages stay out.
+            $urls = ['/' => true, '/docs' => true];
             foreach (array_keys(self::TOPICS) as $slug) {
-                $urls[self::pageUrl($slug)] = $urls[self::pageUrl($slug)] ?? '0.8';
+                $urls[self::pageUrl($slug)] = true;
             }
-            $urls['/chat'] = '0.4';
             $out = '<?xml version="1.0" encoding="UTF-8"?>' . "\n" . '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">' . "\n";
-            foreach ($urls as $path => $priority) {
-                $out .= "  <url><loc>" . htmlspecialchars(self::SITE_URL . $path, ENT_XML1) . "</loc><lastmod>" . self::UPDATED . "</lastmod><priority>{$priority}</priority></url>\n";
+            foreach (array_keys($urls) as $path) {
+                // UPDATED is a knowledge-base release date, not a per-page modification date.
+                $out .= "  <url><loc>" . htmlspecialchars(self::SITE_URL . $path, ENT_XML1, 'UTF-8') . "</loc></url>\n";
             }
             return $out . "</urlset>\n";
         }
@@ -227,11 +228,12 @@
                         $base['description'] = 'Every PHPue ' . self::PHPUE_VERSION . ' knowledge topic for developers and AI agents: core reference, deployment, extensions, recipes and common mistakes.';
                         $base['canonical']   = self::SITE_URL . '/docs';
                         $base['markdown']    = self::SITE_URL . '/llms.txt';
+                        if ($topic !== '') $base['robots'] = 'noindex, follow';
                     }
                     break;
 
                 case 'faq':
-                    $base['title']       = 'PHPue FAQ: direct answers about PHPue ' . self::PHPUE_VERSION;
+                    $base['title']       = 'PHPue FAQ: direct answers about PHPue ' . self::PHPUE_VERSION . ' | ' . self::SITE_NAME;
                     $base['description'] = self::description('faq');
                     $base['canonical']   = self::SITE_URL . '/faq';
                     $base['markdown']    = self::markdownUrl('faq', true);
@@ -250,6 +252,7 @@
                     $base['title']       = 'Ask PHPue AI | ' . self::SITE_NAME;
                     $base['description'] = 'Chat with an AI assistant grounded on the PHPue ' . self::PHPUE_VERSION . ' knowledge base.';
                     $base['canonical']   = self::SITE_URL . '/chat';
+                    $base['robots']      = 'noindex, follow';
                     break;
 
                 default:

@@ -7,7 +7,7 @@
     <footer class="kb-footer">
         <div class="kb-wrap">
             <div>
-                <p><strong>PHPue AI Knowledge</strong>, the LLM-ready reference for PHPue {{ $footerVersion }}.</p>
+                <p><strong>PHPue AI Knowledge</strong>, the companion knowledge base for developers and AI agents using PHPue {{ $footerVersion }}. See the <a href="https://phpue.co.uk/docs">official framework documentation</a>.</p>
                 <p>Updated {{ $footerUpdated }} · Built with PHPue · Apache 2.0</p>
             </div>
             <nav aria-label="Resources">
