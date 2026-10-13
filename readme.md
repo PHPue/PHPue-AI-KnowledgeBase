@@ -1,6 +1,6 @@
 # PHPue AI Knowledge ([ai.phpue.co.uk](https://ai.phpue.co.uk))
 
-The canonical, LLM-ready knowledge base for **PHPue 0.0.3**, built so people and AI agents can write PHPue apps correctly the first time. The site itself is a PHPue 0.0.3 app.
+The companion AI knowledge base for **PHPue 0.0.3**, built so people and AI agents can write PHPue apps correctly the first time. The main framework documentation remains at [phpue.co.uk/docs](https://phpue.co.uk/docs). The site itself is a PHPue 0.0.3 app.
 
 | For | URL |
 |---|---|
@@ -10,7 +10,11 @@ The canonical, LLM-ready knowledge base for **PHPue 0.0.3**, built so people and
 | Coding agents | [AGENTS.md / CLAUDE.md for PHPue projects](https://ai.phpue.co.uk/docs?topic=ai-rules#agents-md-claude-md-for-phpue-projects), [prompts/](prompts/) |
 | Crawlers / GEO | `/robots.txt`, `/sitemap.xml`, JSON-LD (TechArticle, FAQPage, SoftwareSourceCode) on every page, markdown alternates and `Accept: text/markdown` negotiation |
 
-**Editing the knowledge:** everything comes from `www/backend/knowledge/content/*.md` (one file per topic, registered in `www/backend/knowledge/PHPueKnowledge.php`). The HTML pages, agent endpoints, sitemap, JSON-LD and the chat's grounding are all generated from those files, so there is nothing to rebuild. Bump `PHPueKnowledge::UPDATED` when content changes.
+**Editing the knowledge:** everything comes from `www/backend/knowledge/content/*.md` (one file per topic, registered in `www/backend/knowledge/PHPueKnowledge.php`). The HTML pages, agent endpoints, JSON-LD and the chat's grounding are generated from those files. Bump `PHPueKnowledge::UPDATED` when content changes.
+
+**Sitemap and indexing:** `www/sitemap.xml` is the upload-ready sitemap for `https://ai.phpue.co.uk/`. Regenerate it with `php tools/export-sitemap.php` whenever topics or canonical routes change. The PHP fallback endpoint uses the same generator; Apache/nginx normally serve the physical file directly. It lists canonical HTML pages on this subdomain only, excludes chat/forms/downloads/Markdown exports, and omits modification dates until reliable per-page dates are available. `/robots.txt` advertises it. Deploy `www/sitemap.xml` to the public web root alongside the updated backend files and, if using `.dist`, rebuild the views with `cd www && php index.php build`.
+
+Individual Markdown topics declare their HTML equivalent using an HTTP canonical link. Combined LLM exports and skill files use `X-Robots-Tag: noindex, follow`; they remain crawlable and usable by agents. Chat, forms and unknown topic pages are also excluded from indexing. The public HTML knowledge remains indexable for search and AI discovery. Do not canonicalize every topic to `https://phpue.co.uk/docs`: canonicals should identify equivalent content. If a page becomes a true copy of a main-site article, consolidate it with that exact original URL and remove the copy from this sitemap. Distinct content and consistent canonicals reduce ambiguity, but cannot guarantee rankings or prevent competition for overlapping queries. After deployment, submit the subdomain sitemap in Google Search Console and Bing Webmaster Tools and monitor their selected canonical URLs.
 
 **Updating the Agent Skill:** the downloadable skill is a copy of the author's skill. After changing it, run `php tools/sync-skill.php` (default source `~/.claude/skills/phpue`). It copies the skill into `www/backend/knowledge/skill/`, rewrites the few lines that point at the author's machine, and refuses to finish if any local path is left.
 

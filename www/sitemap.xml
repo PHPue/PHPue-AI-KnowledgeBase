@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+  <url><loc>https://ai.phpue.co.uk/</loc></url>
+  <url><loc>https://ai.phpue.co.uk/docs</loc></url>
+  <url><loc>https://ai.phpue.co.uk/docs?topic=ai-rules</loc></url>
+  <url><loc>https://ai.phpue.co.uk/skills</loc></url>
+  <url><loc>https://ai.phpue.co.uk/docs?topic=quickstart</loc></url>
+  <url><loc>https://ai.phpue.co.uk/docs?topic=pvue-files</loc></url>
+  <url><loc>https://ai.phpue.co.uk/docs?topic=templates</loc></url>
+  <url><loc>https://ai.phpue.co.uk/docs?topic=components</loc></url>
+  <url><loc>https://ai.phpue.co.uk/docs?topic=routing</loc></url>
+  <url><loc>https://ai.phpue.co.uk/docs?topic=ajax</loc></url>
+  <url><loc>https://ai.phpue.co.uk/docs?topic=backend</loc></url>
+  <url><loc>https://ai.phpue.co.uk/docs?topic=client-js</loc></url>
+  <url><loc>https://ai.phpue.co.uk/docs?topic=build-deploy</loc></url>
+  <url><loc>https://ai.phpue.co.uk/docs?topic=extensions</loc></url>
+  <url><loc>https://ai.phpue.co.uk/docs?topic=recipes</loc></url>
+  <url><loc>https://ai.phpue.co.uk/docs?topic=gotchas</loc></url>
+  <url><loc>https://ai.phpue.co.uk/docs?topic=upgrade</loc></url>
+  <url><loc>https://ai.phpue.co.uk/docs?topic=migration</loc></url>
+  <url><loc>https://ai.phpue.co.uk/faq</loc></url>
+</urlset>

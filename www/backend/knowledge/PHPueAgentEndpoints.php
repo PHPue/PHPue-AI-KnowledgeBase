@@ -24,8 +24,10 @@
 
             switch ($path) {
                 case '/llms.txt':
+                    header('X-Robots-Tag: noindex, follow');
                     self::send(PHPueKnowledge::llmsTxt(), 'text/plain');
                 case '/llms-full.txt':
+                    header('X-Robots-Tag: noindex, follow');
                     self::send(PHPueKnowledge::llmsFullTxt(), 'text/plain');
                 case '/robots.txt':
                     self::send(self::robotsTxt(), 'text/plain');
@@ -42,6 +44,7 @@
             if (preg_match('#^/skills/phpue/((?:[A-Za-z0-9_-]+/)*[A-Za-z0-9._-]+\.(md|yaml))$#', $path, $m)) {
                 $body = PHPueSkill::file($m[1]);
                 if ($body === null) self::send("Not found. Download the whole skill: " . PHPueKnowledge::SITE_URL . "/skills/phpue.zip\n", 'text/plain', 404);
+                header('X-Robots-Tag: noindex, follow');
                 self::send($body, $m[2] === 'md' ? 'text/markdown' : 'text/plain');
             }
 
@@ -70,7 +73,7 @@
                 }
                 if ($path === '/docs') {
                     header('Vary: Accept');
-                    self::send(PHPueKnowledge::llmsTxt(), 'text/markdown');
+                    self::send(PHPueKnowledge::llmsTxt(), 'text/markdown', 200, PHPueKnowledge::SITE_URL . '/docs');
                 }
             }
         }
@@ -79,13 +82,12 @@
             $site = PHPueKnowledge::SITE_URL;
             return <<<TXT
             # PHPue AI Knowledge: written to be read by people, search engines and AI agents.
-            # All crawlers (including GPTBot, ClaudeBot, PerplexityBot, Google-Extended) are welcome.
+            # Public knowledge pages and agent exports are crawlable.
             # Start with {$site}/llms.txt or {$site}/llms-full.txt
 
             User-agent: *
             Allow: /
             Disallow: /chat?action=
-            Disallow: /form
 
             Sitemap: {$site}/sitemap.xml
 
