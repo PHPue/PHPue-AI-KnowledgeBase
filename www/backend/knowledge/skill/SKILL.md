@@ -12,6 +12,7 @@ Core ideas:
 - **Raw PHP is always allowed and idiomatic.** When a directive can't express something, use `<?php if … ?>`, `<?php foreach … ?>` or `<?= … ?>` in the template. The author does this all the time, so it is not a hack.
 - **Privacy-first forms.** There is no input binding or keystroke tracking. Users submit forms on purpose (explicit `fetch` to `@AJAX`, or a normal POST). `p-model` still exists in `conversion.php` only as a leftover placeholder that the official release deliberately abandoned, so **never use it**. Write `name="email" value="{{ $email }}"` instead.
 - **No mandatory toolchain.** No bundler and no npm (except optional Tailwind CLI). A PHP server is enough: **0.0.3 needs PHP 8.0+** (`conversion.php` calls `str_contains()`); **8.2+ is recommended** (8.0 and 8.1 no longer get security fixes).
+- **PHP security notice (21 October 2026).** PHP fixed a critical runtime RCE, "php2shell" (CVE-2026-109618, CVE-2026-109619). PHPue's code is not affected. When writing Docker or deploy files, use a patched PHP (8.5.12, 8.4.27, 8.3.36, 8.2.35 or newer), a minor tag like `php:8.2-fpm` rather than an older patch tag, and never an end-of-life version (8.1 or older). Details: https://www.ncsc.gov.uk/news/critical-security-issue-affecting-php
 
 ## Step 1: Work out the version and the flavour
 

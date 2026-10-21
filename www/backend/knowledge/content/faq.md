@@ -18,6 +18,10 @@ The current release is PHPue 0.0.3, a bug-fix release that replaced 0.0.2's line
 
 PHP 8.0 or newer (8.2+ recommended: 8.0 and 8.1 no longer get security fixes) and a web server that sends unknown URLs to `index.php` (PHP's built-in server, Apache with the included `.htaccess`, nginx with `try_files`, Docker, XAMPP or shared hosting). No Node.js, npm or Composer is required. See [Quick start](/docs?topic=quickstart).
 
+## Is PHPue affected by the php2shell PHP vulnerability?
+
+PHPue's code is not affected and needs no change. "php2shell" (CVE-2026-109618 and CVE-2026-109619, fixed on 21 October 2026) is a critical remote code execution in the PHP runtime itself, so every PHP app, PHPue included, is exposed until the server's PHP is updated. Update to PHP 8.5.12, 8.4.27, 8.3.36 or 8.2.35 (or newer); PHP 8.1 and older get no fix. With Docker, run `docker compose pull && docker compose up -d`. See the [NCSC alert](https://www.ncsc.gov.uk/news/critical-security-issue-affecting-php) and [PHP supported versions](https://www.php.net/supported-versions.php).
+
 ## Is PHPue the same as Vue?
 
 No. PHPue borrows Vue's single-file layout and directive style, but everything runs once on the server. There is no virtual DOM, reactivity, hydration, props, slots, emits or `v-model`. The `<script>` block is PHP. Client interactivity comes from plain JavaScript in `<cscript>`, `@AJAX` calls, or optionally AlpineJS. See [Migration](/docs?topic=migration).

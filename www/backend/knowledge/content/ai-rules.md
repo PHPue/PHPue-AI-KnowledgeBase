@@ -28,6 +28,7 @@ These rules are for **0.0.3**. 0.0.2 is much stricter about markup layout; if th
 14. **Sessions:** with `PHPUE_SESSION = 'lazy'` (recommended for public sites), call `phpue_session(true)` before writing `$_SESSION` while rendering a page. POST `@AJAX` handlers get a session automatically. `$_GET['page']` is reserved for the route: paginate with `?p=`.
 15. **If `.dist/` exists, edits to `.pvue` files do nothing** (the compiled copy is served). Delete `.dist/` while developing, or rebuild with `php index.php build`.
 16. **Never edit `index.php` or `conversion.php`** to make a feature work. They are the framework core, shared by every PHPue project. If a framework change seems necessary, say so.
+17. **Target a supported, patched PHP.** 0.0.3 needs PHP 8.0+; recommend 8.2+. Never target an end-of-life PHP (8.1 or older) or pin an old patch image tag (`php:8.2.30-fpm`): use a minor tag (`php:8.2-fpm`) and keep it pulled. Check [php.net/supported-versions.php](https://www.php.net/supported-versions.php) when unsure. PHPue fixes nothing here: PHP security comes from the PHP version.
 
 ## Never bring in
 
@@ -94,6 +95,7 @@ Full reference for agents: https://ai.phpue.co.uk/llms-full.txt (index: https://
 - <cscript>: {{ $var }} is json_encode'd - never wrap it in quotes.
 - No named functions/classes in components; put them in backend/. Use getcwd() for paths, not __DIR__.
 - Never edit index.php or conversion.php. Delete .dist/ while developing.
+- PHP 8.0+ required, 8.2+ recommended. Never target an end-of-life PHP or pin an old patch image tag: use php:8.x-fpm tags and keep the server on a supported, patched release.
 - Verify: compile with convert_pvue_file() and pipe to php -l; run with cd www && php -S localhost:3000.
 ```
 

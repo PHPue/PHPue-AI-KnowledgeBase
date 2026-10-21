@@ -9,7 +9,7 @@
         const SITE_URL       = 'https://ai.phpue.co.uk';
         const SITE_NAME      = 'PHPue AI Knowledge';
         const PHPUE_VERSION  = '0.0.3';
-        const UPDATED        = '2026-10-21';
+        const UPDATED        = '2026-10-22';
         const AUTHOR         = 'Edward Patch';
         const SUMMARY        = 'The companion AI knowledge base for PHPue 0.0.3, with coding-agent rules, verified examples and downloadable skills. Official framework documentation: https://phpue.co.uk/docs.';
 
@@ -111,9 +111,18 @@
 
         // ------------------------------------------------------------------ agent files
 
+        /** Dated PHP runtime advisory shown at the top of llms.txt / llms-full.txt (and so in the chat's grounding). Remove once it is no longer current. */
+        public static function securityNotice(): string {
+            return "**Security notice (21 October 2026):** PHP fixed a critical unauthenticated remote code execution in the PHP runtime itself (\"php2shell\", CVE-2026-109618 and CVE-2026-109619). "
+                 . "PHPue's code is not affected and needs no change. When writing deployment files or advising on a server, use a patched PHP: 8.5.12, 8.4.27, 8.3.36 or 8.2.35 (or newer). "
+                 . "PHP 8.1 and older are end-of-life and get no fix: recommend upgrading, not staying. With Docker, use a minor tag such as `php:8.2-fpm` (not an older patch tag) and run `docker compose pull && docker compose up -d`. "
+                 . "Details: https://www.ncsc.gov.uk/news/critical-security-issue-affecting-php and https://www.php.net/supported-versions.php\n\n";
+        }
+
         public static function llmsTxt(): string {
             $out  = "# " . self::SITE_NAME . "\n\n";
             $out .= "> " . self::SUMMARY . "\n\n";
+            $out .= self::securityNotice();
             $out .= "PHPue is NOT Vue: .pvue files compile to plain PHP on the server; there is no virtual DOM, reactivity, props, slots or hydration. ";
             $out .= "Current release: PHPue " . self::PHPUE_VERSION . " (needs PHP 8.0+; 8.2+ recommended, as 8.0/8.1 no longer get security fixes). Official site: https://phpue.co.uk. Source: https://github.com/PHPue/PHPue.\n\n";
             $out .= "Read `ai-rules` before writing code. Every topic is self-contained markdown; `/llms-full.txt` is all of them in one file.\n\n";
@@ -139,6 +148,7 @@
         public static function llmsFullTxt(): string {
             $out  = "# " . self::SITE_NAME . " (full text)\n\n";
             $out .= "> " . self::SUMMARY . "\n\n";
+            $out .= self::securityNotice();
             $out .= "PHPue version: " . self::PHPUE_VERSION . " | Updated: " . self::UPDATED . " | Index: " . self::SITE_URL . "/llms.txt\n";
             foreach (self::TOPICS as $slug => $topic) {
                 $out .= "\n\n---\n\n";
