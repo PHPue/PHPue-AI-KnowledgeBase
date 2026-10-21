@@ -1,6 +1,6 @@
 # PHPue Vanilla: complete reference
 
-Everything here was checked against `conversion.php` and `index.php` (PHPue **0.0.3**, with 0.0.2 differences marked **0.0.2:**) and the PHPue-TechDemo, PHPue-FreeCAD and PHPue-Analytics source. Check a project's version with `grep PHPUE_VERSION www/index.php`. When this file and older PHPue docs disagree (for example `{{ $user.name }}` or `#require Home '…'`), **this file reflects what the engine actually does**. 0.0.3 needs PHP 8.0+.
+Everything here was checked against `conversion.php` and `index.php` (PHPue **0.0.3**, with 0.0.2 differences marked **0.0.2:**) and the PHPue-TechDemo, PHPue-FreeCAD and PHPue-Analytics source. Check a project's version with `grep PHPUE_VERSION www/index.php`. When this file and older PHPue docs disagree (for example `{{ $user.name }}` or `#require Home '…'`), **this file reflects what the engine actually does**. 0.0.3 needs PHP 8.0+ (8.2+ recommended: 8.0 and 8.1 no longer get security fixes).
 
 ## Contents
 1. Project layout

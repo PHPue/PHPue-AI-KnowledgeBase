@@ -1,6 +1,6 @@
 # What PHPue is (and is not)
 
-> **PHPue** is a server-side PHP framework by Edward Patch that compiles Vue-like single-file components (`.pvue` files) into plain PHP. A `.pvue` file has a `<script>` block (PHP), a `<header>` block (head tags), a `<template>` block (HTML with `{{ }}`, `p-if` and `p-for`) and a `<cscript>` block (browser JavaScript). There is no Node.js, bundler or required build step: two PHP files (`index.php` and `conversion.php`) route, compile and serve the app. The current release is **PHPue 0.0.3**, which needs **PHP 8.0 or newer**.
+> **PHPue** is a server-side PHP framework by Edward Patch that compiles Vue-like single-file components (`.pvue` files) into plain PHP. A `.pvue` file has a `<script>` block (PHP), a `<header>` block (head tags), a `<template>` block (HTML with `{{ }}`, `p-if` and `p-for`) and a `<cscript>` block (browser JavaScript). There is no Node.js, bundler or required build step: two PHP files (`index.php` and `conversion.php`) route, compile and serve the app. The current release is **PHPue 0.0.3**, which needs **PHP 8.0 or newer** (8.2+ recommended: 8.0 and 8.1 no longer get security fixes).
 
 Tagline: *Giving U Back Control.* Official site: [phpue.co.uk](https://phpue.co.uk). Source: [github.com/PHPue/PHPue](https://github.com/PHPue/PHPue).
 
@@ -9,7 +9,7 @@ Tagline: *Giving U Back Control.* Official site: [phpue.co.uk](https://phpue.co.
 | Fact | Value |
 |---|---|
 | Current version | 0.0.3 (bug-fix release; 0.0.2 projects still exist) |
-| Requirements | PHP 8.0+ (0.0.3 uses `str_contains()`); any web server that can route to `index.php` |
+| Requirements | PHP 8.0+ (0.0.3 uses `str_contains()`), 8.2+ recommended (8.0/8.1 no longer get security fixes); any web server that can route to `index.php` |
 | Framework files | `index.php` (server, router, builder) and `conversion.php` (`.pvue` to PHP compiler) |
 | Component format | `.pvue` single-file components with `script`, `header`, `template`, `cscript` blocks |
 | Template syntax | `{{ $expr }}` (escaped echo), `p-if="cond"`, `p-for="$item in $list"`, raw `<?php ?>` |

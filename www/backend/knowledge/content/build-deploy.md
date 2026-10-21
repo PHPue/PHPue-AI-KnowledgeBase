@@ -51,7 +51,7 @@ Rebuild after any change to `.pvue` files, `backend/` or `assets/` (they are cop
 
 **3. Source on the server.** Upload the `.pvue` sources and let the server compile per request. You must block `.pvue`, `views/`, `components/` and `backend/`, and remember that source mode enables the dev tools. Prefer options 1 or 2.
 
-Any host with PHP 8.0+ works: shared hosting/cPanel, a VPS with nginx or Apache, Docker, FTP upload. No Node.js on the server.
+Any host with PHP 8.0+ works (8.2+ recommended: 8.0 and 8.1 no longer get security fixes): shared hosting/cPanel, a VPS with nginx or Apache, Docker, FTP upload. No Node.js on the server.
 
 ## Apache `.htaccess`
 
