@@ -9,7 +9,7 @@
         const SITE_URL       = 'https://ai.phpue.co.uk';
         const SITE_NAME      = 'PHPue AI Knowledge';
         const PHPUE_VERSION  = '0.0.3';
-        const UPDATED        = '2026-10-12';
+        const UPDATED        = '2026-10-21';
         const AUTHOR         = 'Edward Patch';
         const SUMMARY        = 'The companion AI knowledge base for PHPue 0.0.3, with coding-agent rules, verified examples and downloadable skills. Official framework documentation: https://phpue.co.uk/docs.';
 
@@ -115,7 +115,7 @@
             $out  = "# " . self::SITE_NAME . "\n\n";
             $out .= "> " . self::SUMMARY . "\n\n";
             $out .= "PHPue is NOT Vue: .pvue files compile to plain PHP on the server; there is no virtual DOM, reactivity, props, slots or hydration. ";
-            $out .= "Current release: PHPue " . self::PHPUE_VERSION . " (needs PHP 8.0+). Official site: https://phpue.co.uk. Source: https://github.com/PHPue/PHPue.\n\n";
+            $out .= "Current release: PHPue " . self::PHPUE_VERSION . " (needs PHP 8.0+; 8.2+ recommended, as 8.0/8.1 no longer get security fixes). Official site: https://phpue.co.uk. Source: https://github.com/PHPue/PHPue.\n\n";
             $out .= "Read `ai-rules` before writing code. Every topic is self-contained markdown; `/llms-full.txt` is all of them in one file.\n\n";
             foreach (self::sections() as $section => $topics) {
                 $out .= "## {$section}\n\n";
@@ -132,7 +132,7 @@
             $out .= "- [Official documentation](https://phpue.co.uk/docs): the human docs on phpue.co.uk.\n";
             $out .= "- [PHPue on GitHub](https://github.com/PHPue/PHPue): index.php and conversion.php, the two framework files.\n";
             $out .= "- [Official extensions](https://github.com/PHPue/PHPue-Extensions): MetaControl, Matrix CMS, x-ssr.\n";
-            $out .= "- [This knowledge base on GitHub](https://github.com/PHPue/PHPue-AI): source of this site; content lives in www/backend/knowledge/content/.\n";
+            $out .= "- [This knowledge base on GitHub](https://github.com/PHPue/PHPue-AI-KnowledgeBase): source of this site; content lives in www/backend/knowledge/content/.\n";
             return $out;
         }
 
@@ -285,7 +285,7 @@
                 'url'                 => 'https://phpue.co.uk',
                 'codeRepository'      => 'https://github.com/PHPue/PHPue',
                 'programmingLanguage' => 'PHP',
-                'runtimePlatform'     => 'PHP 8.0+',
+                'runtimePlatform'     => 'PHP 8.0+ (8.2+ recommended)',
                 'version'             => self::PHPUE_VERSION,
                 'license'             => 'https://www.apache.org/licenses/LICENSE-2.0',
                 'author'              => ['@type' => 'Person', 'name' => self::AUTHOR],

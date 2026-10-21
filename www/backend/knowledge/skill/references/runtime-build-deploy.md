@@ -1,6 +1,6 @@
 # Runtime, build and deployment
 
-Current release: **0.0.3** (needs PHP 8.0+; the README badge's 7.4+ is out of date). 0.0.2 differences are marked **0.0.2:**. Check with `grep PHPUE_VERSION www/index.php`. Upgrading = replacing `index.php` **and** `conversion.php` together; nothing else changes.
+Current release: **0.0.3** (needs PHP 8.0+; 8.2+ recommended, since 8.0 and 8.1 no longer get security fixes). 0.0.2 differences are marked **0.0.2:**. Check with `grep PHPUE_VERSION www/index.php`. Upgrading = replacing `index.php` **and** `conversion.php` together; nothing else changes.
 
 Constants in `index.php`: `PHPUE_VERSION`, `PHPUE_LANG` (default `<html lang>`), and in 0.0.3 `PHPUE_SESSION` (`'auto'` | `'lazy'`, edit the `define` line) and optionally `PHPUE_DEV_TOOLS` (see below).
 

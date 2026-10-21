@@ -2,6 +2,14 @@
 
 The companion AI knowledge base for **PHPue 0.0.3**, built so people and AI agents can write PHPue apps correctly the first time. The main framework documentation remains at [phpue.co.uk/docs](https://phpue.co.uk/docs). The site itself is a PHPue 0.0.3 app.
 
+## 🔒 Security notice (21 October 2026)
+
+PHP has patched a critical vulnerability in the PHP runtime itself ("php2shell", CVE-2026-109618 and CVE-2026-109619). PHPue's code is not affected and needs no change.
+
+- Update your server to a patched PHP version: **8.5.12**, **8.4.27**, **8.3.36** or **8.2.35** (or newer).
+- Using Docker? Run `docker compose pull && docker compose up -d` to switch to the patched image.
+- Details: [NCSC alert](https://www.ncsc.gov.uk/news/critical-security-issue-affecting-php) · [PHP supported versions](https://www.php.net/supported-versions.php)
+
 | For | URL |
 |---|---|
 | People | [ai.phpue.co.uk](https://ai.phpue.co.uk), [/docs](https://ai.phpue.co.uk/docs), [/faq](https://ai.phpue.co.uk/faq), [/chat](https://ai.phpue.co.uk/chat) (Gemini, grounded on the knowledge base) |
@@ -18,7 +26,7 @@ Individual Markdown topics declare their HTML equivalent using an HTTP canonical
 
 **Updating the Agent Skill:** the downloadable skill is a copy of the author's skill. After changing it, run `php tools/sync-skill.php` (default source `~/.claude/skills/phpue`). It copies the skill into `www/backend/knowledge/skill/`, rewrites the few lines that point at the author's machine, and refuses to finish if any local path is left.
 
-**Run locally:** `cd www && php -S localhost:3000` (PHP 8.0+), or `docker compose up` (port 3000). The chat uses the site's Gemini key from `www/backend/env.php` (git-ignored, `<?php putenv('GEMINI_API_KEY=...');`). Visitors can also use their own Gemini or OpenAI key: that mode runs entirely in the browser (`www/assets/js/phpue-byok.js`), the key is never sent to this server, and `/chat` sends a Content-Security-Policy that only allows connections to this site, Google and OpenAI.
+**Run locally:** `cd www && php -S localhost:3000` (PHP 8.0+, 8.2+ recommended), or `docker compose up` (port 3000). The chat uses the site's Gemini key from `www/backend/env.php` (git-ignored, `<?php putenv('GEMINI_API_KEY=...');`). Visitors can also use their own Gemini or OpenAI key: that mode runs entirely in the browser (`www/assets/js/phpue-byok.js`), the key is never sent to this server, and `/chat` sends a Content-Security-Policy that only allows connections to this site, Google and OpenAI.
 
 ---
 

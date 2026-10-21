@@ -60,7 +60,7 @@ class BlogMeta {
 
 - App header values are injected **raw**: escape inside the tag strings.
 - Routes whose meta comes from MetaControl should have **no `<title>`** in their view header (the App one would win anyway).
-- MetaControl uses the session, so pages using it are not cacheable anonymously. For a fully cacheable public site, compute the head tags from a sessionless backend class instead (this site does: see `PHPueKnowledge::headTags()` in its [source](https://github.com/PHPue/PHPue-AI)).
+- MetaControl uses the session, so pages using it are not cacheable anonymously. For a fully cacheable public site, compute the head tags from a sessionless backend class instead (this site does: see `PHPueKnowledge::headTags()` in its [source](https://github.com/PHPue/PHPue-AI-KnowledgeBase)).
 
 ## Matrix CMS: flat-file content
 

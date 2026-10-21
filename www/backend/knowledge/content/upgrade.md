@@ -1,6 +1,6 @@
 # Upgrading from 0.0.2 to 0.0.3
 
-> PHPue 0.0.3 is a bug-fix release. It replaces 0.0.2's line-based regular expressions with a block parser and tag-aware `p-if`/`p-for` conversion, so most 0.0.2 markup traps are gone. To upgrade, replace **both** `index.php` and `conversion.php` (they are one release), make sure the server runs PHP 8.0+, then check the behaviour changes below. Your `.pvue` files usually need no edits.
+> PHPue 0.0.3 is a bug-fix release. It replaces 0.0.2's line-based regular expressions with a block parser and tag-aware `p-if`/`p-for` conversion, so most 0.0.2 markup traps are gone. To upgrade, replace **both** `index.php` and `conversion.php` (they are one release), make sure the server runs PHP 8.0+ (8.2+ recommended, as 8.0 and 8.1 no longer get security fixes), then check the behaviour changes below. Your `.pvue` files usually need no edits.
 
 ## How to upgrade
 
@@ -23,7 +23,7 @@
 | Hot reload | watched one folder level | recursive |
 | Build without `components/` | crashed | works |
 | backend/ load order | filesystem order | sorted path order |
-| PHP version | 7.4+ | 8.0+ |
+| PHP version | 7.4+ | 8.0+ (8.2+ recommended) |
 
 If a client calls a plain function through `action`, it worked on 0.0.2 and returns the HTML page on 0.0.3: mark it `@AJAX('POST')` (or `'GET'`).
 

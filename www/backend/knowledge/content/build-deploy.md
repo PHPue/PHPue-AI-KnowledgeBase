@@ -132,5 +132,5 @@ nginx `fastcgi_cache`: bypass and skip caching when the visitor has a session co
 - One `<title>` and meta description per page: static in each view header, or dynamic from the App header via the [MetaControl extension](/docs?topic=extensions).
 - Real content in the server-rendered HTML (render lists with `p-for`, not only Alpine `x-for`).
 - Canonical URLs, a `sitemap.xml`, a `robots.txt` that allows the crawlers you want, and JSON-LD structured data.
-- For AI agents, an `/llms.txt` index and markdown versions of key pages. This site serves them from a `backend/` file that answers those URLs before routing (see its source on [GitHub](https://github.com/PHPue/PHPue-AI)).
+- For AI agents, an `/llms.txt` index and markdown versions of key pages. This site serves them from a `backend/` file that answers those URLs before routing (see its source on [GitHub](https://github.com/PHPue/PHPue-AI-KnowledgeBase)).
 - Cacheable anonymous pages (lazy sessions) so crawlers and CDNs get fast responses.

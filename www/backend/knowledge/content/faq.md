@@ -16,7 +16,7 @@ The current release is PHPue 0.0.3, a bug-fix release that replaced 0.0.2's line
 
 ## What do I need to run PHPue?
 
-PHP 8.0 or newer and a web server that sends unknown URLs to `index.php` (PHP's built-in server, Apache with the included `.htaccess`, nginx with `try_files`, Docker, XAMPP or shared hosting). No Node.js, npm or Composer is required. See [Quick start](/docs?topic=quickstart).
+PHP 8.0 or newer (8.2+ recommended: 8.0 and 8.1 no longer get security fixes) and a web server that sends unknown URLs to `index.php` (PHP's built-in server, Apache with the included `.htaccess`, nginx with `try_files`, Docker, XAMPP or shared hosting). No Node.js, npm or Composer is required. See [Quick start](/docs?topic=quickstart).
 
 ## Is PHPue the same as Vue?
 

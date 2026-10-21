@@ -59,7 +59,7 @@ if ($v3 && preg_match('/define\(\s*[\'"]PHPUE_DEV_TOOLS[\'"]\s*,\s*(true|1|[\'"]
     issue('WARN', 'index.php', lineAt($indexSrc, $dm[0][1]), 'PHPUE_DEV_TOOLS is forced on: ?compile=, ?build and ?hot-reload stay reachable even when .dist/ is deployed. Only do this on a dev machine.');
 }
 if ($v3) {
-    // 0.0.3's conversion.php uses str_contains(): PHP 8.0+ (the README badge still says 7.4+)
+    // 0.0.3's conversion.php uses str_contains(): PHP 8.0+
     $pinFiles = array_merge(
         glob(dirname($www) . '/{docker-compose,compose}*.{yml,yaml}', GLOB_BRACE) ?: [],
         glob(dirname($www) . '/{Dockerfile,Dockerfile.*,docker/*/Dockerfile*}', GLOB_BRACE) ?: [],

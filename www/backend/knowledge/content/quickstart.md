@@ -1,6 +1,6 @@
 # Quick start: your first PHPue app
 
-> A PHPue app needs PHP 8.0+, two framework files (`index.php`, `conversion.php`) and your `.pvue` files. No Node.js, Composer or bundler. Run it with PHP's built-in server, Docker, XAMPP, or any host that routes requests to `index.php`.
+> A PHPue app needs PHP 8.0+ (8.2+ recommended: 8.0 and 8.1 no longer get security fixes), two framework files (`index.php`, `conversion.php`) and your `.pvue` files. No Node.js, Composer or bundler. Run it with PHP's built-in server, Docker, XAMPP, or any host that routes requests to `index.php`.
 
 ## 1. Get the framework
 

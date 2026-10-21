@@ -11,7 +11,7 @@ Core ideas:
 - **PHP owns the server. The browser layer is optional.** Client behaviour comes from plain JS in `<cscript>`, `@AJAX` calls, or (optionally) AlpineJS.
 - **Raw PHP is always allowed and idiomatic.** When a directive can't express something, use `<?php if … ?>`, `<?php foreach … ?>` or `<?= … ?>` in the template. The author does this all the time, so it is not a hack.
 - **Privacy-first forms.** There is no input binding or keystroke tracking. Users submit forms on purpose (explicit `fetch` to `@AJAX`, or a normal POST). `p-model` still exists in `conversion.php` only as a leftover placeholder that the official release deliberately abandoned, so **never use it**. Write `name="email" value="{{ $email }}"` instead.
-- **No mandatory toolchain.** No bundler and no npm (except optional Tailwind CLI). A PHP server is enough: **0.0.3 needs PHP 8.0+** (`conversion.php` calls `str_contains()`), even though the PHPue README badge still says 7.4+.
+- **No mandatory toolchain.** No bundler and no npm (except optional Tailwind CLI). A PHP server is enough: **0.0.3 needs PHP 8.0+** (`conversion.php` calls `str_contains()`); **8.2+ is recommended** (8.0 and 8.1 no longer get security fixes).
 
 ## Step 1: Work out the version and the flavour
 
