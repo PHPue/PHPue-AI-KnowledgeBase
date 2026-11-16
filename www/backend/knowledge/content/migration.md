@@ -18,7 +18,7 @@
 | Head / meta | `next/head`, `metadata` | `useHead` | `@section('title')` | view `<header>` (static) or App header (dynamic) |
 | Client state | `useState`, Redux | `ref`, Pinia | Livewire, Alpine | PHP + `$_SESSION`; Alpine when you need it |
 | Effects / fetching | `useEffect`, SWR | `onMounted`, `useFetch` | controller | fetch in PHP before rendering |
-| API routes | `pages/api/*` | `server/api/*` | `routes/api.php` | `@AJAX('POST')` functions, or a `backend/` endpoint |
+| API routes | `pages/api/*` | `server/api/*` | `routes/api.php` | `@AJAX('POST')` functions (a `backend/` endpoint only for file uploads and downloads) |
 | Forms | controlled inputs | `v-model` | `old()`, `@csrf` | plain `name`/`value`, explicit POST or `@AJAX` |
 | Build | webpack / Vite / Turbopack | Vite | Vite (assets) | none; optional `php index.php build` |
 | Hosting | Node server, Vercel | Node server | PHP host | any PHP 8 host, shared hosting included |

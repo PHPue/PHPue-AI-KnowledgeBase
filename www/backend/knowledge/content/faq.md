@@ -48,7 +48,7 @@ Mark a PHP function with `@AJAX('POST')` (or `@AJAX('GET')`) in a `<script>` blo
 
 ## How do I handle forms in PHPue?
 
-Either submit a normal `<form method="post">` and handle `$_POST` in the view's `<script>`, or send the form as JSON to an `@AJAX` function. PHPue deliberately has no two-way binding: forms are submitted on purpose. File uploads go to a `backend/` endpoint because `@AJAX` only reads JSON. See [Recipes](/docs?topic=recipes).
+Either submit a normal `<form method="post">` and handle `$_POST` in the view's `<script>`, or send the form as JSON to an `@AJAX` function. PHPue deliberately has no two-way binding: forms are submitted on purpose. Only real file uploads go to a `backend/` endpoint, because `@AJAX` only reads JSON; everything else that returns JSON is an `@AJAX` function. See [Recipes](/docs?topic=recipes).
 
 ## Can I use a database with PHPue?
 

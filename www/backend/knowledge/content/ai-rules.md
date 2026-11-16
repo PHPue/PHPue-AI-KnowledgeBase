@@ -20,7 +20,7 @@ These rules are for **0.0.3**. 0.0.2 is much stricter about markup layout; if th
 6. **Views are routes:** `views/<name>.pvue` is `/<name>`, `views/index.pvue` is `/`. Only top-level files; no nested paths (`/blog/post` is a 404), use query strings (`/blog?post=slug`). Register every view in `App.pvue` with `#require 'views/name.pvue';` (no name before the path). `<View/>` appears only in `App.pvue`.
 7. **The view `<header>` is static HTML** (`{{ $x }}` prints a literal `$x`, PHP is not run). Only `App.pvue`'s header is dynamic, and only for `{{ $var }}`, `{{ $arr['k'] }}` and `{{ $obj->prop }}`, injected **raw**. Build dynamic meta strings in the App script (or use the MetaControl extension).
 8. **Scope:** App, each view and `@AJAX` handlers run in separate scopes. App variables are **not** visible in views. Share data through `backend/` singletons, `$_SESSION`, `define()` or `$GLOBALS`.
-9. **`@AJAX('POST')` / `@AJAX('GET')`** goes directly before `function name($input) { ... }` in a `<script>` block. Handlers must **`echo`** (usually `json_encode`), because return values are discarded. They run **before** the page script, so they see no page variables. The declared method is enforced (wrong method: 405). Function names are global, so keep them unique. Client: `fetch('', {method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({action: 'name', ...})})` or `fetch('?action=name&x=1')`. Only JSON bodies dispatch; `FormData` does not.
+9. **`@AJAX('POST')` / `@AJAX('GET')`** goes directly before `function name($input) { ... }` in a `<script>` block. Handlers must **`echo`** (usually `json_encode`), because return values are discarded. They run **before** the page script, so they see no page variables. The declared method is enforced (wrong method: 405). Function names are global, so keep them unique. Client: `fetch('', {method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({action: 'name', ...})})` or `fetch('?action=name&x=1')`. Only JSON bodies dispatch; `FormData` does not. `@AJAX` is the default for every browser-to-server call (also on 0.0.2, where the weaker dispatcher is a reason to upgrade, not to avoid it): never hand-roll a JSON endpoint in `backend/` for an ordinary action.
 10. **`<cscript>` becomes a `<script>` tag.** Inside it `{{ $expr }}` becomes `json_encode($expr)`, so never wrap it in quotes (`"{{ $name }}"` produces `""Ada""`). Function calls are not converted there: `<?= json_encode(count($x)) ?>`.
 11. **A block cannot contain its own closing tag**, even in a string or comment: a literal closing script tag inside the PHP block ends it. Split it: `'</scr' . 'ipt>'`. Same for `</cscript>` and `</header>`.
 12. **No named functions or classes in components** (redeclared when the component is used twice or in a loop). Put them in `backend/`, or use closures. Avoid top-level `let`/`const` in a reused component's `<cscript>`.
@@ -52,8 +52,8 @@ These rules are for **0.0.3**. 0.0.2 is much stricter about markup layout; if th
 | Dynamic title/meta, global CSS/JS, analytics | `App.pvue` `<header>` + App `<script>` |
 | Browser behaviour | `<cscript>` (or `/assets/js/*.js`) |
 | Classes, DB access, helpers, API clients | `backend/*.php` (singletons with `getInstance()`) |
-| Browser-callable server actions | `@AJAX` functions in the view (or App for site-wide actions) |
-| File uploads, non-JSON endpoints | a `backend/` endpoint file (`?api&endpoint=...`) |
+| Browser-callable server actions (forms, buttons, Alpine actions, baskets, toggles) | `@AJAX` functions in the view (or App for site-wide actions), always, on 0.0.2 too. Thin handler, logic in a `backend/` class |
+| Multipart file uploads, non-JSON responses (downloads, images, streams) only | a `backend/` endpoint file (`?api&endpoint=...`). Never for ordinary JSON actions |
 
 ## Verify before you answer
 

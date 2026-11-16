@@ -57,7 +57,7 @@
 | You write | What happens | Fix |
 |---|---|---|
 | `return ['ok' => true];` in a handler | empty response | `echo json_encode(['ok' => true]);` |
-| `fetch('', {method: 'POST', body: formData})` | no action found: the full HTML page comes back (200) | send JSON, or a backend endpoint for uploads |
+| `fetch('', {method: 'POST', body: formData})` | no action found: the full HTML page comes back (200) | send JSON (`Object.fromEntries(formData)`); a backend endpoint only for real file uploads |
 | Handler uses a variable set in the view script | undefined (handlers run first) | recompute in the handler or use a singleton |
 | `@AJAX('POST')` called with GET (or the reverse) | 405 | match the method |
 | Client calls a plain (non-`@AJAX`) function by `action` | falls through to the HTML page | mark it `@AJAX('POST')` |

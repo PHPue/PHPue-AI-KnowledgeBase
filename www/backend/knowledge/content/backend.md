@@ -5,7 +5,7 @@
 ## backend/ autoloading
 
 - Files load recursively in sorted path order (0.0.3). If a folder contains `autoload.php`, **only that file** is loaded for the folder and PHPue does not scan deeper. Use it to fix load order (`extends` across files) or to keep data files out of the scan.
-- Files run on every request, including AJAX calls and 404s. Keep them to definitions and idempotent bootstraps. **Never echo** from them (except dedicated endpoint files that `exit`).
+- Files run on every request, including AJAX calls and 404s. Keep them to definitions and idempotent bootstraps. **Never echo** from them (except a dedicated upload or download endpoint file that `exit`s; ordinary JSON actions are `@AJAX` handlers, not backend endpoints).
 - Composer: put `vendor/` inside `backend/` (its `autoload.php` stops the scan there). Do not add Composer at the project root.
 - A file that `return`s an array (config, language pack) must not be loaded twice with `require_once`, because the second call returns `true`. Keep such files in a folder with an `autoload.php`, or load them with `require`.
 

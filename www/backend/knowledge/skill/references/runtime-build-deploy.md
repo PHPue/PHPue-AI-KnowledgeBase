@@ -116,7 +116,7 @@ With `PHPUE_SESSION = 'auto'` (the default, and always in 0.0.2) PHPue starts a 
 
 ## Security notes worth knowing (framework behaviour)
 
-- **AJAX dispatcher.** 0.0.3: only functions marked `@AJAX` can be called through `action=<name>` (GET query or POST JSON), and only with their declared method (405 otherwise); unknown names fall through to the page. **0.0.2:** any request with `action=<name>` calls `<name>()` if *any* function with that name exists, including PHP built-ins and backend helpers. Either way, validate and authorise inside handlers.
+- **AJAX dispatcher.** 0.0.3: only functions marked `@AJAX` can be called through `action=<name>` (GET query or POST JSON), and only with their declared method (405 otherwise); unknown names fall through to the page. **0.0.2:** any request with `action=<name>` calls `<name>()` if *any* function with that name exists, including PHP built-ins and backend helpers. Treat that as a reason to upgrade the project to 0.0.3 (replace `index.php` + `conversion.php` together), not as a reason to avoid `@AJAX`: the dispatcher runs whether or not the project declares handlers, so a hand-rolled endpoint fixes nothing. Either way, validate and authorise inside handlers.
 - Dev endpoints: 0.0.3 switches `?compile=`, `?hot-reload` and web `?build` off once `.dist/App.php` or `App.php` exists (unless `PHPUE_DEV_TOOLS` is defined). **0.0.2:** `?compile=` and `?build` are not restricted to dev mode. In both, deploy compiled output (Options 1 and 2) and keep `.pvue` sources off production servers.
 - `backend/` code runs on every request, including AJAX and 404s. Keep it side-effect-light and never echo from it.
 - `{{ $var }}` in the **App header** and `<?= ?>` are unescaped. Escape when you build those strings.

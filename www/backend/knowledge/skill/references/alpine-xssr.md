@@ -188,11 +188,183 @@ tutorialCardTemplate: {
 
 ### C. Pure-CSR analytics dashboard (Analytics `views/index.pvue` + `assets/js/handlers/forms.js`)
 - The view passes `$_SESSION['latest_csv']` to `window.latestCSV` through `<cscript>`.
-- Uploads use `FormData` to a **backend endpoint** (`fetch('?api&endpoint=fileUpload', {method:'POST', body: formData})`, handled in `backend/forms/submit.php`, which stores results in the session), not `@AJAX`, because `@AJAX` only reads JSON.
+- Uploads use `FormData` to a **backend endpoint** (`fetch('?api&endpoint=fileUpload', {method:'POST', body: formData})`, handled in `backend/forms/submit.php`, which stores results in the session), not `@AJAX`, because `@AJAX` only reads JSON and this is a multipart **file upload**. That is the narrow case for a backend endpoint (the other is a raw/non-JSON response: file download, image, stream). **Do not use a backend endpoint for ordinary JSON actions — use `@AJAX`** (§7). Everything else on this dashboard that talks to the server is an `@AJAX` handler.
 - Getters (`workbenchRows`, …) feed `x-ssr` tables. `process()` makes cells clickable (`self.workbench.search = item.key`), which updates the search, which updates the rows, which re-renders.
 - Detail views (traffic-depth, …) use plain `<cscript>` + Chart.js and server components (`<DetailedView/>`, `<CSVDetected/>`) that read variables the view sets first (`<?php $title = …; ?>`).
 
 ## 7. AJAX from Alpine
+
+`@AJAX` is PHPue's built-in way for the browser to call the server. **Use it by default** for every Alpine action that needs the server (forms, buttons, basket/cart updates, toggles), on 0.0.3 and 0.0.2 alike. The standard PHPue + Alpine + x-ssr loop:
+
+1. An Alpine action calls `fetch` on the page path with `{action: '<handler>', ...}`.
+2. The `@AJAX` handler in the view updates session/DB and echoes JSON.
+3. Alpine replaces its state with the response.
+4. x-ssr swaps only the rows whose key changed.
+5. A reload SSRs the same state from the session.
+
+Keep the handler body thin and put logic and validation in a `backend/` class. **0.0.2** is not a reason to skip this: recommend upgrading to 0.0.3 (replace `index.php` + `conversion.php` together), and if the project must stay on 0.0.2, still use `@AJAX` with a method check inside the handler, no helper functions named after actions, and full input validation (`vanilla.md` §10). Don't invent a parallel endpoint in `backend/`.
+
+### Worked example: session basket (run on 0.0.3 and 0.0.2 while writing this)
+
+**Client fetch body** (Alpine method; the whole component is below):
+```js
+body: JSON.stringify({ action: 'menuBasket', token: this.token, id, op })   // op: 'add' | 'remove'
+```
+
+**View handler** (`views/menu.pvue`). One line of logic, in the view:
+```html
+<script>
+    // 0.0.3 with PHPUE_SESSION = 'lazy': call phpue_session(true) first, because token() writes $_SESSION.
+    $menu        = MenuBasket::menu();
+    $basket      = MenuBasket::state();
+    $basketToken = MenuBasket::token();
+
+    @AJAX('POST')
+    function menuBasket($input) {
+        MenuBasket::respond($input);
+    }
+</script>
+```
+
+**Backend class** (`backend/Menu/MenuBasket.php`). `state()` feeds both the SSR script and the JSON response, so server rows and client rows always have the same keys:
+```php
+<?php
+    class MenuBasket {
+        private const MAX_QUANTITY = 20;
+        private const MENU = [
+            'margherita' => ['name' => 'Margherita', 'unitPence' => 950],
+            'diavola'    => ['name' => 'Diavola',    'unitPence' => 1150],
+        ];
+
+        public static function menu(): array {
+            $menu = [];
+            foreach (self::MENU as $id => $item) $menu[] = ['id' => $id] + $item + ['priceLabel' => self::money($item['unitPence'])];
+            return $menu;
+        }
+
+        // CSRF token, stored in the session and seeded into Alpine by the view.
+        public static function token(): string {
+            return $_SESSION['menu_basket_token'] ??= bin2hex(random_bytes(32));
+        }
+
+        public static function state(): array {
+            $rows  = [];
+            $total = 0;
+            foreach ($_SESSION['menu_basket'] ?? [] as $id => $quantity) {
+                if (!isset(self::MENU[$id])) continue;
+                $unitPence = self::MENU[$id]['unitPence'];
+                $total    += $quantity * $unitPence;
+                $rows[]    = [
+                    'key'       => "$id:$quantity:$unitPence",      // rev-key: changes whenever the row's content changes
+                    'id'        => $id,
+                    'name'      => self::MENU[$id]['name'],
+                    'quantity'  => $quantity,
+                    'lineLabel' => self::money($quantity * $unitPence),
+                ];
+            }
+            return ['rows' => $rows, 'totalLabel' => self::money($total)];
+        }
+
+        public static function respond($input): void {
+            header('Content-Type: application/json');
+            // 0.0.3 already enforces the declared method (405). This check is what protects a 0.0.2 project.
+            if (($_SERVER['REQUEST_METHOD'] ?? '') !== 'POST') { self::fail(405, 'POST only'); return; }
+            if (!is_array($input) || !hash_equals(self::token(), (string)($input['token'] ?? ''))) { self::fail(403, 'Bad token'); return; }
+
+            $id = (string)($input['id'] ?? '');
+            if (!isset(self::MENU[$id])) { self::fail(422, 'Unknown item'); return; }
+
+            $quantity = (int)($_SESSION['menu_basket'][$id] ?? 0);
+            switch ($input['op'] ?? '') {
+                case 'add':    $quantity++; break;
+                case 'remove': $quantity--; break;
+                default:       self::fail(422, 'Unknown operation'); return;
+            }
+            $quantity = max(0, min(self::MAX_QUANTITY, $quantity));
+
+            if ($quantity === 0) unset($_SESSION['menu_basket'][$id]);
+            else $_SESSION['menu_basket'][$id] = $quantity;
+
+            echo json_encode(['ok' => true, 'basket' => self::state()]);
+        }
+
+        private static function fail(int $status, string $error): void {
+            http_response_code($status);
+            echo json_encode(['ok' => false, 'error' => $error]);
+        }
+
+        private static function money(int $pence): string {
+            return '£' . number_format($pence / 100, 2);
+        }
+    }
+?>
+```
+
+**Template and Alpine state** (same view). Rows are keyed `id:quantity:unitPence`, so a quantity or price change gives a new key: x-ssr removes the stale row (server-rendered or not) and renders a fresh one, while untouched rows keep their original server node.
+```html
+<template>
+    <main x-data="menuBasket">
+        <ul>
+            <?php foreach ($menu as $item): ?>
+                <li>
+                    <?= htmlspecialchars($item['name']) ?> (<?= htmlspecialchars($item['priceLabel']) ?>)
+                    <button type="button" @click="change('<?= htmlspecialchars($item['id'], ENT_QUOTES) ?>', 'add')">Add</button>
+                </li>
+            <?php endforeach; ?>
+        </ul>
+
+        <ul x-ssr="basket.rows" x-ssr-key="key" x-ssr-template="rowTemplate">
+            <?php foreach ($basket['rows'] as $row): ?>
+                <li data-key="<?= htmlspecialchars($row['key'], ENT_QUOTES) ?>">
+                    <span><?= htmlspecialchars($row['name']) ?></span> × <span><?= $row['quantity'] ?></span>
+                    <span><?= htmlspecialchars($row['lineLabel']) ?></span>
+                    <button type="button" @click="change('<?= htmlspecialchars($row['id'], ENT_QUOTES) ?>', 'remove')">Remove one</button>
+                </li>
+            <?php endforeach; ?>
+        </ul>
+        <p>Total: <span x-text="basket.totalLabel">{{ $basket['totalLabel'] }}</span></p>
+    </main>
+</template>
+
+<cscript>
+    document.addEventListener('alpine:init', () => {
+        Alpine.data('menuBasket', () => ({
+            basket: {{ $basket }},
+            token: {{ $basketToken }},
+            busy: false,
+
+            rowTemplate: {
+                html: `
+                    <li>
+                        <span>\${item.name}</span> × <span>\${item.quantity}</span>
+                        <span>\${item.lineLabel}</span>
+                        <button type="button" @click="change('\${item.id}', 'remove')">Remove one</button>
+                    </li>
+                `
+            },
+
+            async change(id, op) {
+                if (this.busy) return;
+                this.busy = true;
+                try {
+                    const res = await fetch(window.location.pathname, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ action: 'menuBasket', token: this.token, id, op })
+                    });
+                    const data = await res.json();
+                    if (data.ok) this.basket = data.basket;      // x-ssr swaps only the rows whose key changed
+                } finally {
+                    this.busy = false;
+                }
+            }
+        }));
+    });
+</cscript>
+```
+Checked behaviour: bad token → 403, unknown item → 422, GET → 405 (from the dispatcher on 0.0.3, from `respond()` on 0.0.2); adding another item keeps the existing server row's DOM node; changing a row's quantity replaces just that row; a reload renders the same rows and total from the session.
+
+### Generic call shape
 
 ```js
 async createCube() {
@@ -225,4 +397,5 @@ The handler goes in the **view** (`@AJAX('POST') function createCube($input) { �
 - [ ] CSR template literals use `\${item.prop}`, one root element, nested data handled in `process()`.
 - [ ] PHP and JS filtering/pagination logic match. URL state via `history.pushState`.
 - [ ] 0.0.2: no `p-if` on elements carrying `>`-containing Alpine attributes, and no `p-for` + `p-if` on the same element (both fine in 0.0.3).
-- [ ] `@AJAX` handlers live in the view/App (0.0.2 drops component handlers from the build), echo JSON, and are called with their declared method (0.0.3 enforces it). Uploads go through a backend endpoint.
+- [ ] `@AJAX` handlers live in the view/App (0.0.2 drops component handlers from the build), echo JSON, and are called with their declared method (0.0.3 enforces it; 0.0.2: check it in the handler). Logic and validation sit in a `backend/` class.
+- [ ] Every ordinary JSON action is an `@AJAX` handler. A backend endpoint exists only for multipart file uploads or non-JSON responses.

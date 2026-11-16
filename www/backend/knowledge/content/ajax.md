@@ -2,6 +2,8 @@
 
 > Put `@AJAX('POST')` or `@AJAX('GET')` directly before a PHP function in a `<script>` block and the browser can call it: POST a JSON body with `"action": "functionName"`, or GET `?action=functionName`. The function receives the request data as `$input` and must **`echo`** its response (usually `json_encode`); return values are discarded. Handlers run before any page code and end the request.
 
+**`@AJAX` is PHPue's built-in way for the browser to call the server. Use it by default** for forms, buttons, AlpineJS actions, basket/cart updates and toggles, on 0.0.3 and 0.0.2 alike. Keep the handler thin and put logic and validation in a `backend/` class: `@AJAX('POST') function menuBasket($input) { MenuBasket::respond($input); }`. Do not hand-roll a JSON endpoint in `backend/` for ordinary actions; that pattern is only for file uploads and non-JSON responses (see "File uploads and other non-JSON requests" below).
+
 ## Server side
 
 ```php
@@ -106,9 +108,11 @@ function subscribe($input) {
 
 The simplest PHPue interaction loop needs almost no JavaScript: an `@AJAX` handler changes `$_SESSION` or the database, the client calls `location.reload()`, and the server renders the new state. For no-reload updates, echo JSON and patch the DOM in `<cscript>`, or use AlpineJS ([client JS](/docs?topic=client-js)).
 
+With AlpineJS and x-ssr the standard loop is: Alpine action → `fetch` to the page path with `{action: '<handler>', ...}` → the `@AJAX` handler in the view updates session/DB and echoes JSON → Alpine replaces its state → x-ssr swaps only the changed rows → a reload server-renders the same state from the session. The Agent Skill's `references/alpine-xssr.md` §7 has a full session-basket example (CSRF token, backend class, rows keyed `id:quantity:unitPence`).
+
 ## File uploads and other non-JSON requests
 
-The dispatcher only reads JSON bodies for POST, so `FormData` / multipart uploads do not reach `@AJAX` (you get the HTML page back). Use a backend endpoint instead:
+The dispatcher only reads JSON bodies for POST, so `FormData` / multipart uploads do not reach `@AJAX` (you get the HTML page back). A real **file upload** is one of the only two cases for a backend endpoint; the other is a **non-JSON response** (file download, image, stream). **Do not use a backend endpoint for ordinary JSON actions — use `@AJAX`.** Plain form fields are not a reason either: send them as JSON with `Object.fromEntries(new FormData(form))`. The upload case:
 
 ```php
 <?php
@@ -134,4 +138,5 @@ Client: `fetch('?api&endpoint=avatarUpload', {method: 'POST', body: new FormData
 - Add CSRF protection for state-changing handlers on logged-in sites (a token stored in `$_SESSION`, sent in the JSON body, compared with `hash_equals`).
 - Escape anything you send back that the client will insert as HTML, or insert it with `textContent`.
 - GET handlers can be cached by proxies for anonymous visitors: send `Cache-Control: no-store` for per-user data.
-- On 0.0.2 the dispatcher calls **any** existing PHP function named in `action` (including built-ins) and ignores the declared method. Upgrade to 0.0.3.
+- On 0.0.2 the dispatcher calls **any** existing PHP function named in `action` (including built-ins) and ignores the declared method. That is a reason to **upgrade to 0.0.3** (replace `index.php` and `conversion.php` together; 0.0.3 only dispatches `@AJAX`-marked functions and enforces the declared method), not a reason to avoid `@AJAX`: the dispatcher runs whether or not you declare handlers, so a hand-rolled endpoint removes nothing.
+- If a project must stay on 0.0.2, still use `@AJAX`: check `$_SERVER['REQUEST_METHOD']` inside the handler, don't name helper functions after actions, and validate all input. Don't invent a parallel endpoint.

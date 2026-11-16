@@ -332,6 +332,17 @@ if (is_dir('backend')) {
         if (substr((string)$bf, -4) !== '.php') continue;
         $src = file_get_contents((string)$bf);
         if (preg_match_all('/^\s*function\s+(\w+)\s*\(/m', $src, $fm, PREG_OFFSET_CAPTURE)) foreach ($fm[1] as [$n, $o]) $fnDecls[$n] ??= [str_replace('\\', '/', (string)$bf), lineAt($src, $o)];
+
+        // Hand-rolled JSON endpoint: branches on a request flag, echoes JSON and exits. That is @AJAX's job,
+        // unless it handles an upload ($_FILES) or sends non-JSON content (download, image, stream).
+        $m = maskPhp($src);
+        if (preg_match('/\b(?:if|elseif|switch|match)\s*\([^;{]*\$_(?:GET|REQUEST|SERVER)\b/', $m, $em, PREG_OFFSET_CAPTURE)
+            && preg_match('/\b(?:echo|print)\b[^;]*\bjson_encode\s*\(/', $m)
+            && preg_match('/\b(?:exit|die)\b/', $m)
+            && !preg_match('/\$_FILES\b|\b(?:readfile|fpassthru|imagepng|imagejpeg|imagewebp|imagegif)\s*\(/', $m)
+            && !preg_match('/Content-Disposition|Content-Type:\s*(?!application\/json)[\w.+-]+\/[\w.+-]+/i', $src)) {
+            issue('WARN', str_replace('\\', '/', (string)$bf), lineAt($src, $em[0][1]), "This backend file branches on a request flag and echoes JSON + exit: a hand-rolled endpoint. Use an @AJAX handler in the view instead (@AJAX('POST') function name(\$input) { YourClass::respond(\$input); }) and keep the logic in this class" . ($v3 ? '' : '. On 0.0.2 that still applies: check the method inside the handler, or upgrade to 0.0.3') . ". Backend endpoints are only for multipart uploads (\$_FILES) or non-JSON responses.");
+        }
     }
 }
 $jsActions = [];   // [file, line, name, kind: 'json'|'query']

@@ -42,7 +42,7 @@ www/                     web root and working directory (all paths are relative 
 ├── App.pvue             root layout: global <header>, navbar/footer, <View/>
 ├── views/               one .pvue per route (top level only): index.pvue -> "/", about.pvue -> "/about"
 ├── components/          reusable .pvue files (any depth), pulled in with @require
-├── backend/             *.php auto-required on every request (classes, singletons, endpoints)
+├── backend/             *.php auto-required on every request (classes, singletons, upload endpoints)
 ├── httpReqs/            http404.php + http404Head.php (custom 404 page)
 ├── assets/              css/ js/ img/, served statically at /assets/...
 ├── .htaccess            front controller + security rules (Apache)

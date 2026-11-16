@@ -30,7 +30,7 @@ www/                         ← web root and working directory for everything (
 ├── App.pvue                 ← root layout: global <header>, Navbar/Footer, <View/>
 ├── views/                   ← one .pvue per route (top level only): index.pvue → "/", about.pvue → "/about"
 ├── components/              ← reusable .pvue (any depth): components/navigation/Navbar.pvue
-├── backend/                 ← *.php auto-required on every request (classes, singletons, extensions, API endpoints)
+├── backend/                 ← *.php auto-required on every request (classes, singletons, extensions, upload/download endpoints)
 ├── httpReqs/                ← http404.php, http404Head.php (custom 404), index.php (403 guard)
 ├── assets/                  ← css/ js/ img/ (served statically at /assets/...), each dir has an index.php 403 guard
 ├── .htaccess                ← front controller + security blocks (Apache)
@@ -89,6 +89,14 @@ Plain PHP without `<?php` tags. Anything PHP 8 can do works: `$_GET`, `$_POST`, 
 - Routing scans `views/*.pvue` (or `.dist/pages/*.php`) anyway. **0.0.2:** `#require` matters for the **build**, because only `#require`d views get `.dist/ajax/ajax-<view>.php` generated. 0.0.3 builds every view's handlers regardless. Always `#require` every view (it's the convention and keeps 0.0.2 builds correct).
 
 ### `@AJAX`: server functions callable from the browser
+`@AJAX` is PHPue's built-in way for the browser to call the server. **Use it by default** for forms, buttons, Alpine actions, basket/cart updates and toggles, in 0.0.3 and 0.0.2 alike. Keep the handler body thin and put logic and validation in a `backend/` class:
+```php
+@AJAX('POST')
+function menuBasket($input) {
+    MenuBasket::respond($input);      // backend/Menu/MenuBasket.php validates, updates the session, echoes JSON
+}
+```
+A small self-contained handler is fine inline:
 ```php
 @AJAX('POST')
 function saveUser($input) {
@@ -103,7 +111,7 @@ function saveUser($input) {
 - Only functions marked `@AJAX` can be called. A plain helper function named in `action` is never called.
 - Takes `$input` or no parameters. See §10.
 
-**0.0.2:** the regex is `@AJAX\('([^']+)'\)\s*(function\s+\w+\([^)]*\))\s*\{`, so single quotes only, no return type and no `)` inside the parameter list (when the pattern doesn't match, `@AJAX(...)` is left in the PHP as a parse error). The method is documentation only, and **any** function (PHP built-ins included) can be called by name.
+**0.0.2:** the regex is `@AJAX\('([^']+)'\)\s*(function\s+\w+\([^)]*\))\s*\{`, so single quotes only, no return type and no `)` inside the parameter list (when the pattern doesn't match, `@AJAX(...)` is left in the PHP as a parse error). The dispatcher doesn't enforce the method and calls any existing function named in `action`. Recommend upgrading to 0.0.3; until then, still use `@AJAX` and harden the handler (§10).
 
 Everything else in `<script>` is normal PHP: assignments, `define()`, `use` of backend classes, closures, and `usort` with closures.
 
@@ -368,6 +376,8 @@ A component is any `.pvue` that is `@require`d. Compilation **inlines** its comp
 
 ## 10. AJAX in depth
 
+**Intent.** `@AJAX` is the default, intended way for the browser to call the server in PHPue: forms, buttons, Alpine actions, basket/cart updates, toggles. Don't route around it. With Alpine + x-ssr the standard loop is: Alpine action → `fetch` to the page path with `{action: '<handler>', ...}` → the `@AJAX` handler in the view updates session/DB and echoes JSON → Alpine replaces its state → x-ssr swaps only the changed rows → a reload SSRs the same state from the session (worked example: `alpine-xssr.md` §7). Keep handler bodies thin (`MenuBasket::respond($input);`) and put logic and validation in `backend/` classes, which are testable and shared between the handler and the SSR script.
+
 **Server.** Every request first runs the compiled App preamble. If the request is `POST` with a JSON body containing `"action"`, or `GET` with `?action=`, and that name is a registered `@AJAX` function (0.0.3; **0.0.2:** any existing PHP function), it's called and the script **exits** before any HTML:
 - 0.0.3 enforces the declared method: `@AJAX('POST')` called with GET (or the reverse) gets `405`, an `Allow:` header and `{"error": "@AJAX 'name' only accepts POST"}`. POST handlers get a session started (`phpue_session(true)`).
 - `$input` = `json_decode(php://input, true)` for POST, or `$_GET` for GET (which includes `page`).
@@ -376,8 +386,11 @@ A component is any `.pvue` that is `@require`d. Compilation **inlines** its comp
 - If `action` names no `@AJAX` function, the request falls through and returns the **full HTML page with status 200**. Clients should check `response.ok` and the content type, or `try { await res.json() }`. (Upgrading from 0.0.2: if the client calls a plain function by `action`, mark it `@AJAX('POST')`; the linter flags these.)
 - `$_SESSION` is available. Backend singletons are loaded.
 - Available handlers. 0.0.3: App + every view + every component (recursively), in dev and in `.dist` (`.dist/ajax/ajax-*.php`), so any page URL works, though posting to the page that owns the handler (`fetch('')` or `window.location.pathname`) stays the clearest. **0.0.2:** dev has `App.pvue` + all `views/*.pvue` + components required by the requested page; production has App + every `#require`d view only, so **post to the page URL that owns the handler**.
-- Only JSON bodies are read for POST. `FormData`/multipart uploads don't dispatch. For uploads use a **backend endpoint** (see §11) and `fetch('?api&endpoint=fileUpload', {method:'POST', body: formData})`.
-- Security: validate and authorise inside every handler and never trust `$input`. 0.0.3 only dispatches `@AJAX` functions with their declared method. **0.0.2:** the dispatcher calls **any** existing function by name, including PHP built-ins and backend helpers, so don't name helper functions after actions.
+- Only JSON bodies are read for POST. `FormData`/multipart uploads don't dispatch. Multipart file uploads are one of the two cases for a **backend endpoint** (see §11): `fetch('?api&endpoint=fileUpload', {method:'POST', body: formData})`. The other is a non-JSON response (file download, image, stream). Ordinary form fields are not a reason: send them as JSON (`Object.fromEntries(new FormData(form))`, below).
+- Security: validate and authorise inside every handler and never trust `$input` (state-changing handlers: POST plus a session CSRF token, as in `alpine-xssr.md` §7). 0.0.3 only dispatches `@AJAX`-marked functions, with their declared method.
+- **0.0.2 is an upgrade prompt, not a reason to avoid `@AJAX`.** Its dispatcher doesn't enforce the declared method and calls any existing function named in `action` (PHP built-ins and backend helpers included). That hole is in the dispatcher, which runs on every request whether or not the project declares any `@AJAX` handler, so a hand-rolled endpoint next to it removes nothing and adds a second entry point to secure. What to do instead:
+  - Recommend upgrading to 0.0.3: replace `index.php` and `conversion.php` together (they are one release; checklist in `engine-gotchas.md`). 0.0.3 only dispatches `@AJAX`-marked functions and enforces the declared method.
+  - If the project must stay on 0.0.2, still use `@AJAX`: check the method inside the handler (`if ($_SERVER['REQUEST_METHOD'] !== 'POST') { http_response_code(405); return; }`), don't name helper functions after actions (prefer static methods on `backend/` classes, which can't be reached by `action`), and validate all input. Don't invent a parallel endpoint.
 
 **Client (vanilla).**
 ```js
@@ -430,13 +443,13 @@ The common vanilla loop is: **AJAX mutates `$_SESSION`/DB → `location.reload()
   - `Environment` singleton: dev detection (`SERVER_NAME === 'localhost' || SERVER_ADDR === '127.0.0.1' || isset($_GET['dev'])`), DB config, cookie consent, analytics snippet.
   - Extensions in `backend/phpue-extensions/` with a `PHPueExt` namespace, guarded by `if (defined('PHPUE_VERSION') && version_compare(PHPUE_VERSION, '0.0.1', '>='))`. Examples: `\PHPueExt\MetaControl` (session-backed meta map: `setMetaVariable`, `getMetaVariable`, `unsetMetaVariables`, `setRendered`) and `PrettyUrlRedirect::init()`.
   - Meta router: `backend/meta-scripts/phpueMetaRouter.php` maps the first path segment to a `*Meta` singleton that sets MetaControl variables from query params or DB.
-- **Backend API endpoint pattern** (Analytics `backend/forms/submit.php`). Use it when `@AJAX` doesn't fit (multipart uploads, raw responses):
+- **Backend API endpoint pattern** (Analytics `backend/forms/submit.php`). **Do not use a backend endpoint for ordinary JSON actions — use `@AJAX`.** This pattern is only for the two cases `@AJAX` genuinely can't serve: **multipart file uploads** (`@AJAX` only reads a JSON body, so `$_FILES` never reaches a handler) and **raw/non-JSON responses** (file downloads, images, streams). A basket, a form, a toggle, a like button or a search is an `@AJAX` handler, on 0.0.2 as well (§10). The linter warns about a `backend/` file that branches on a request flag and echoes JSON + `exit` without touching `$_FILES` or sending non-JSON content. The upload case looks like this:
   ```php
   <?php
   if (isset($_GET['api'], $_GET['endpoint']) && in_array($_GET['endpoint'], ['fileUpload', 'loadExample'], true)) {
       header('Content-Type: application/json');
       if ($_SERVER['REQUEST_METHOD'] !== 'POST') { echo json_encode(['success' => false, 'error' => 'Invalid method']); exit; }
-      // … handle $_FILES / $_POST, store results in $_SESSION …
+      // … handle $_FILES (the reason this isn't @AJAX), store results in $_SESSION …
       echo json_encode(['success' => true, /* … */]);
       exit;
   }
